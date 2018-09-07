@@ -34,6 +34,22 @@ float scale = 0.3;
 float x_angle = 0.0;
 float y_angle = 0.0;
 
+//variables to control camera position and looking at
+float camera_pos_x = 0.0f;
+float cam_last_x = 0.0f;
+
+float camera_pos_y = 40.0f;
+float cam_last_y = 0.0f;
+
+float camera_pos_z = 320.0f;
+float cam_last_z = 0.0f;
+
+float camera_look_x = 0.0f;
+float camera_look_y = 0.0f;
+float camera_look_z = -1.0f;
+
+float angle = 0.0f;
+
 // init
 void init() {
 	glShadeModel(GL_SMOOTH);
@@ -72,6 +88,26 @@ void mouse(int button, int state, int x, int y) {
 	mouse_x = x;
 	mouse_y = y;
 	mouse_button = button;
+}
+
+//keyboard
+void keyboard(unsigned char key, int x, int y) {
+
+	//move camera forward if w pressed
+	if (key == 'w') {
+		camera_pos_z = camera_pos_z - 10;
+		camera_look_z = camera_look_z - 10;
+
+
+	}
+
+	//move camera back if s pressed
+	else if (key == 's') {
+		camera_pos_z = camera_pos_z + 10;
+		camera_look_z = camera_look_z + 10;
+	}
+
+	glutPostRedisplay();
 }
 
 // motion
@@ -115,8 +151,8 @@ void display(void) {
 	glLoadIdentity();
 
 	// lookAt
-	gluLookAt(0.0f, 40.0f, 320.0f,
-		0.0f, 1.0f, -1.0f,
+	gluLookAt(camera_pos_x, camera_pos_y, camera_pos_z,
+		camera_look_x, camera_look_y, camera_look_z,
 		0.0f, 1.0f, 0.0f);
 
 	// camera
@@ -172,6 +208,7 @@ void main(int argc, char* argv[]) {
 	glutIdleFunc(display);
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
+	glutKeyboardFunc(keyboard);
 
 	init();
 
