@@ -1,0 +1,230 @@
+#pragma once
+#pragma warning(disable : 4996)
+
+//File to store all the include libs as well as common used data structures
+#include <vector>
+#include "ImathVec.h"
+#include <GL/glut.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <windows.h>
+#include <wingdi.h>
+#include "noise.h"
+
+#define PI 3.1415926
+
+using namespace std;
+using namespace Imath;
+
+typedef Vec3<float> Vec3f;
+typedef Vec2<float> Vec2f;
+
+// mesh data structure
+struct Mesh {
+	// vertex
+	vector<Vec3f> dot_vertex;
+	vector<Vec3f> dot_normalPerFace;
+	vector<Vec3f> dot_normalPerVertex;
+	vector<Vec2f> dot_texture;
+	// faces
+	vector<int> face_index_vertex;
+	vector<int> face_index_normalPerFace;
+	vector<int> face_index_normalPerVertex;
+	vector<int> face_index_texture;
+};
+
+// t_scale
+inline float t_scale(float x) {
+	// assuming noise report values -2.xxx to 2.xxx
+	return (x + 2) / 4;
+}
+
+// marbleMap
+inline Vec3f marbleMap(float a) {
+	Vec3f black = Vec3f(0, 0, 0);
+	Vec3f color = Vec3f(1, 1, 1);
+	return ((1 - a) * color + a * black);
+}
+
+// skyMap
+inline Vec3f skyMap(float a) {
+	Vec3f white = Vec3f(1, 1, 1);
+	Vec3f color = Vec3f(1, 0, 0);
+	return ((1 - a) * white + a * color);
+}
+
+//lavaMap
+inline Vec3f lava(float a) {
+	Vec3f red = Vec3f(0, 0, 0);
+	Vec3f color = Vec3f(0, 0, .3);
+	return ((1 - a) * red + a * color);
+}
+
+// Load a DIB/BMP file from disk.
+inline GLubyte *LoadDIBitmap(const char *filename, BITMAPINFO **info) {
+	FILE *fp;      // open file pointer
+	GLubyte * bits; // bitmap pixel bits
+	int bitsize;   // Size of bitmap
+	int infosize;  // Size of header information
+	BITMAPFILEHEADER header; // File header
+													 // try opening the file; use "rb" mode to read this *binary* file.
+	if ((fp = fopen(filename, "rb")) == NULL)
+		return (NULL);
+	// read the file header and any following bitmap information.
+	if (fread(&header, sizeof(BITMAPFILEHEADER), 1, fp) < 1) {
+		// Couldn't read the file header - return NULL.
+		fclose(fp);
+		return (NULL);
+	}
+	// Check for BM reversed.
+	if (header.bfType != 'MB') {
+		// not a bitmap file - return NULL.
+		fclose(fp);
+		return (NULL);
+	}
+	infosize = header.bfOffBits - sizeof(BITMAPFILEHEADER);
+	if ((*info = (BITMAPINFO *)malloc(infosize)) == NULL) {
+		// couldn't allocate memory for bitmap info - return NULL.
+		fclose(fp);
+		return (NULL);
+	}
+	if (fread(*info, 1, infosize, fp) < infosize) {
+		// Couldn't read the bitmap header - return NULL.
+		free(*info);
+		fclose(fp);
+		return (NULL);
+	}
+	// Now that we have all the header info read in, allocate memory for the bitmap and read *it* in.
+	if ((bitsize = (*info)->bmiHeader.biSizeImage) == 0)
+		bitsize = ((*info)->bmiHeader.biWidth*(*info)->bmiHeader.biBitCount + 7) / 8 * abs((*info)->bmiHeader.biHeight);
+	if ((bits = (GLubyte *)malloc(bitsize)) == NULL) {
+		// Couldn't allocate memory - return NULL!
+		free(*info);
+		fclose(fp);
+		return (NULL);
+	}
+	if (fread(bits, 1, bitsize, fp) < bitsize) {
+		// couldn't read bitmap - free memory and return NULL!
+		free(*info);
+		free(bits);
+		fclose(fp);
+		return (NULL);
+	}
+	// OK, everything went fine - return the allocated bitmap.
+	fclose(fp);
+	return (bits);
+}
+
+// OBJ file - str to int
+inline int StrToInt(const string &str) {
+	int i;
+	if (sscanf_s(str.c_str(), "%i", &i) == 1) return i;
+	else return 0;
+}
+
+// OBJ file - split string
+inline vector<string> split_string(const string& str, const string& split_str) {
+	vector<string> stlv_string;
+	string part_string("");
+	string::size_type i;
+	i = 0;
+	while (i < str.size()) {
+		if (split_str.find(str[i]) != string::npos) {
+			stlv_string.push_back(part_string);
+			part_string = "";
+			while (split_str.find(str[i]) != string::npos) {
+				++i;
+			}
+		}
+		else {
+			part_string += str[i];
+			++i;
+		}
+	}
+	if (!part_string.empty())
+		stlv_string.push_back(part_string);
+	return stlv_string;
+}
+
+// OBJ file - load file
+inline Mesh* loadFile(const char* file) {
+	Mesh *m = new Mesh;
+	m->dot_vertex.clear();
+	m->face_index_vertex.clear();
+	ifstream infile(file);
+	if (infile.fail()) {
+		cout << "Error opening file " << file;
+		return NULL;
+	}
+	char current_line[1024];
+	while (!infile.eof()) {
+		infile.getline(current_line, 1024);
+		switch (current_line[0]) {
+		case'v':
+			float x, y, z;
+			switch (current_line[1]) {
+			case 'n':
+				sscanf_s(current_line, "vn %f %f %f", &x, &y, &z);
+				m->dot_normalPerFace.push_back(Vec3f(x, y, z));
+				m->dot_normalPerVertex.push_back(Vec3f(x, y, z));
+				break;
+			case 't':
+				sscanf_s(current_line, "vt %f %f", &x, &y);
+				m->dot_texture.push_back(Vec2f(x, y));
+				break;
+			default:
+				sscanf_s(current_line, "v %f %f %f", &x, &y, &z);
+				m->dot_vertex.push_back(Vec3f(x, y, z));
+				break;
+			}
+			break;
+		case 'f': {
+			vector<string> faces = split_string(current_line, " \t.\r\n");
+			int vnt[3][3] = { { -1, -1, -1 },{ -1, -1, -1 },{ -1, -1, -1 } };
+			string::size_type begin, end;
+			for (int i = 0; i < 2; i++) {
+				begin = 0;
+				int j = 0;
+				do {
+					end = faces[i + 1].find_first_of("/", begin);
+					if (begin < end) {
+						vnt[i][j] = StrToInt(faces[i + 1].substr(begin, end - begin)) - 1;
+					}
+					else {
+						vnt[i][j] = -1;
+					}
+					begin = end + 1;
+					j++;
+				} while (end != string::npos);
+			}
+			for (unsigned int i = 3; i < faces.size(); i++) {
+				begin = 0;
+				int j = 0;
+				do {
+					end = faces[i].find_first_of("/", begin);
+					if (begin < end) {
+						vnt[2][j] = StrToInt(faces[i].substr(begin, end - begin)) - 1;
+					}
+					else {
+						vnt[2][j] = -1;
+					}
+					begin = end + 1;
+					j++;
+				} while (end != string::npos);
+				for (int j = 0; j < 3; j++) {
+					m->face_index_vertex.push_back(vnt[j][0]);
+					if (vnt[j][1] != -1) m->face_index_texture.push_back(vnt[j][1]);
+					if (vnt[j][2] != -1) m->face_index_normalPerFace.push_back(vnt[j][2]);
+					if (vnt[j][2] != -1) m->face_index_normalPerVertex.push_back(vnt[j][2]);
+				}
+				memcpy(&vnt[1], &vnt[2], sizeof(int) * 3);
+			}
+		}
+				  break;
+		default:
+			break;
+		}
+	}
+	return m;
+}
