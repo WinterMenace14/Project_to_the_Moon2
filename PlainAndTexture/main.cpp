@@ -36,13 +36,13 @@ float y_angle = 0.0;
 
 //variables to control camera position and looking at
 float camera_pos_x = 0.0f;
-float cam_last_x = 0.0f;
+//float cam_last_x = 0.0f;
 
 float camera_pos_y = 40.0f;
-float cam_last_y = 0.0f;
+//float cam_last_y = 0.0f;
 
 float camera_pos_z = 320.0f;
-float cam_last_z = 0.0f;
+//float cam_last_z = 0.0f;
 
 float camera_look_x = 0.0f;
 float camera_look_y = 0.0f;
@@ -75,6 +75,22 @@ void init() {
 	glEnable(GL_LIGHTING);
 }
 
+
+// rotate what the user see
+void rotate_point(float angle) {
+	float s = sin(angle);
+	float c = cos(angle);
+	// translate point back to origin:
+	camera_look_x -= camera_pos_x;
+	camera_look_z -= camera_pos_z;
+	// rotate point
+	float xnew = camera_look_x * c - camera_look_z * s;
+	float znew = camera_look_x * s + camera_look_z * c;
+	// translate point back:
+	camera_look_x = xnew + camera_pos_x;
+	camera_look_z = znew + camera_pos_z;
+}
+
 // reshape
 void reshape(int w, int h) {
 	width = w;
@@ -94,17 +110,39 @@ void mouse(int button, int state, int x, int y) {
 void keyboard(unsigned char key, int x, int y) {
 
 	//move camera forward if w pressed
-	if (key == 'w') {
-		camera_pos_z = camera_pos_z - 10;
-		camera_look_z = camera_look_z - 10;
-
-
+	if (key == 'a') {
+		angle += -.01f;
+		rotate_point(-.01);
 	}
 
 	//move camera back if s pressed
+	else if (key == 'd') {
+		angle += .01f;
+		rotate_point(.01);
+	}
+
+	else if (key == 'w') {
+		camera_look_y = camera_look_y + 10;
+	}
+
 	else if (key == 's') {
-		camera_pos_z = camera_pos_z + 10;
-		camera_look_z = camera_look_z + 10;
+		camera_look_y = camera_look_y - 10;
+	}
+
+	else if (key == 'i') {
+		camera_pos_x += (10) * sin(angle);//*0.1;
+		camera_pos_z += (10) * -cos(angle);//*0.1;
+		camera_look_x += (10) * sin(angle);//*0.1;
+		camera_look_z += (10) * -cos(angle);//*0.1;
+	}
+
+	else if (key == 'k') {
+		//camera_z += 10;
+		camera_pos_x += (-10) * sin(angle);//*0.1;
+		camera_pos_z += (-10) * -cos(angle);//*0.1;
+		//camera_viewing_y -= 10;
+		camera_look_x += (-10) * sin(angle);//*0.1;
+		camera_look_z += (-10) * -cos(angle);//*0.1;
 	}
 
 	glutPostRedisplay();
@@ -206,7 +244,7 @@ void main(int argc, char* argv[]) {
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
 	glutIdleFunc(display);
-	glutMouseFunc(mouse);
+	//glutMouseFunc(mouse);
 	glutMotionFunc(motion);
 	glutKeyboardFunc(keyboard);
 
