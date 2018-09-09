@@ -17,6 +17,7 @@ Date	: 8/30/2018
 #include "Globals.h"
 #include "Lane.h"
 #include "Skybox.h"
+#include "FlatPlain.h"
 
 int width = 1200;
 int height = 600;
@@ -25,6 +26,7 @@ float ratio = 1.0;
 //create variables to hold objects
 Lane *lane;
 Skybox *skybox;
+FlatPlain *flatPlain;
 
 // controling parameters
 int mouse_button;
@@ -36,13 +38,8 @@ float y_angle = 0.0;
 
 //variables to control camera position and looking at
 float camera_pos_x = 0.0f;
-//float cam_last_x = 0.0f;
-
 float camera_pos_y = 40.0f;
-//float cam_last_y = 0.0f;
-
 float camera_pos_z = 320.0f;
-//float cam_last_z = 0.0f;
 
 float camera_look_x = 0.0f;
 float camera_look_y = 0.0f;
@@ -61,6 +58,9 @@ void init() {
 	
 	//create skybox object
 	skybox = new Skybox();
+
+	//create flatPlain object
+	flatPlain = new FlatPlain();
 
 	// light
 	GLfloat light_ambient[] = { 0.6, 0.6, 0.6, 0.5 };
@@ -181,7 +181,7 @@ void display(void) {
 	glPushMatrix();
 	glLoadIdentity();
 	glViewport(0, 0, width, height);
-	gluPerspective(45, ratio, 1, 3000);
+	gluPerspective(45, ratio, 1, 10000);
 
 	// view
 	glMatrixMode(GL_MODELVIEW);
@@ -199,15 +199,21 @@ void display(void) {
 	glRotatef(y_angle, 0.0f, 1.0f, 0.0f);
 	glTranslatef(0.0f, 0.0f, 0.0f);
 
-	//plane
+	//plain
 	glPushMatrix();
-	glTranslatef(-900, -900, -900);
+	glTranslatef(-5000, -800, -5000);
 	glCallList(lane->getDisplayList());
+	glPopMatrix();
+
+	//lava
+	glPushMatrix();
+	glTranslatef(-10000, -800, -10000);
+	glCallList(flatPlain->getDisplayList());
 	glPopMatrix();
 	
 	// skybox
 	glPushMatrix();
-	glTranslatef(-2500, -1000, -2500);
+	glTranslatef(-10000, -3000, -10000); //-2500, -1000, -2500
 	glCallList(skybox->getDisplayList());
 	glPopMatrix();
 
@@ -245,7 +251,7 @@ void main(int argc, char* argv[]) {
 	glutDisplayFunc(display);
 	glutIdleFunc(display);
 	//glutMouseFunc(mouse);
-	glutMotionFunc(motion);
+	//glutMotionFunc(motion);
 	glutKeyboardFunc(keyboard);
 
 	init();

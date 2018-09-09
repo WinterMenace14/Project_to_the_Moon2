@@ -60,13 +60,28 @@ public:
 	double perlinMultiscale(float x, float y) {
 		double total = 0;
 		double scale = 0.05;
-		double p = 0.03; //0.1; //persistence 
-		double n = 1.5; //3.0; // number of octaves
+		double p = 0.09; //0.1; //persistence 
+		double n = 3; //3.0; // number of octaves
 		double frequency, amplitude;
 		for (int i = 0; i < n; i++) {
 			frequency = pow(2, (double)i);
 			amplitude = pow(p, (double)-i) * 2;
 			total = total + noise(scale*frequency* x, scale*frequency* y, 11.5) * amplitude;
+		}
+		return total;
+	}
+
+	//for lava
+	double perlinFireMultiscale(float x, float y) {
+		double total = 0;
+		double scale = 0.005;
+		double p = .95; //0.1; //persistence 
+		double n = 7; //3.0; // number of octaves
+		double frequency, amplitude;
+		for (int i = 0; i < n; i++) {
+			frequency = pow(2, (double)i);
+			amplitude = pow(p, (double)-i) * 2;
+			total = total + abs(noise(scale*frequency* x, scale*frequency* y, 11.5)) * amplitude;
 		}
 		return total;
 	}

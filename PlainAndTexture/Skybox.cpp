@@ -48,9 +48,9 @@ void Skybox::bmpTexture(UINT textureArray[], const char *file, int n) {
 Mesh* Skybox::createCube() {
 	Mesh *mesh = new Mesh;
 	// Vertexes
-	int BOX_WIDTH = 5000;
-	int BOX_HEIGHT = 5000;
-	int BOX_DEPTH = 5000;
+	int BOX_WIDTH = 20000;
+	int BOX_HEIGHT = 10000;
+	int BOX_DEPTH = 20000;
 
 	mesh->dot_vertex.push_back(Vec3<GLfloat>(0.0, BOX_HEIGHT, BOX_DEPTH)); //0
 	mesh->dot_vertex.push_back(Vec3<GLfloat>(BOX_WIDTH, BOX_HEIGHT, BOX_DEPTH)); //1

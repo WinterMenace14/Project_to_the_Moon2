@@ -1,86 +1,39 @@
-#include "Lane.h"
+#include "FlatPlain.h"
 
-Lane::Lane() {
-	mesh = createPlane(10000, 10000, 200);
+FlatPlain::FlatPlain() {
+	mesh = createFlatPlane(20000, 20000, 2000);
 	calculateNormalPerFace();
 	calculateNormalPerVertex();
-	bmpTexture(this->texture, "bmp/brick.bmp");
-	//codedTexture();
+	codedTexture();
 	meshToDisplayList();
 }
 
-Lane::~Lane() {
-	//default destructor
+FlatPlain::~FlatPlain() {
+
 }
 
-Mesh* Lane::getMesh() {
+Mesh* FlatPlain::getMesh() {
 	return this->mesh;
 }
 
-GLuint Lane::getDisplayList() {
+GLuint FlatPlain::getDisplayList() {
 	return this->display;
 }
 
-GLuint Lane::getTexture() {
+GLuint FlatPlain::getTexture() {
 	return this->texture;
 }
 
-void Lane::bmpTexture(UINT texture, const char *file) {
-	BITMAPINFO *bitmapInfo; // Bitmap information
-	GLubyte    *bitmapBits; // Bitmap data
-	if (!file) {
-		cout << "texture file not found!" << endl;
-		return;
-	}
-	bitmapBits = LoadDIBitmap(file, &bitmapInfo);
-	glGenTextures(1, &this->texture);
-	glBindTexture(GL_TEXTURE_2D, this->texture);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // must set to 1 for compact data
-																				 // glTexImage2D Whith size and minification
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bitmapInfo->bmiHeader.biWidth, bitmapInfo->bmiHeader.biHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, bitmapBits);
-}
-
-// Create texture from algorithm
-void Lane::codedTexture() {
-	const int TexHeight = 128;
-	const int TexWidth = 128;
-	// create texture in memory
-	GLubyte textureImage[TexHeight][TexWidth][3];
-	ImprovedNoise noise;
-	Vec3f pixelColor;
-	for (int i = 0; i < TexHeight; i++)
-		for (int j = 0; j < TexWidth; j++) {
-			//pixelColor = marbleMap(t_scale(noise.perlinMarble(i * 5, j * 5)));
-			pixelColor = lava(t_scale(noise.perlinFireMultiscale(i * 5, j * 5)));
-			textureImage[i][j][0] = pixelColor[0] * 255;
-			textureImage[i][j][1] = pixelColor[1] * 255;
-			textureImage[i][j][2] = pixelColor[2] * 255;
-		}
-	// setup texture
-	glGenTextures(1, &this->texture);
-	glBindTexture(GL_TEXTURE_2D, this->texture);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // must set to 1 for compact data
-																				 // glTexImage2D Whith size and minification
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, TexWidth, TexHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, textureImage); // BGRA to include alpha
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-}
-
-Mesh* Lane::createPlane(int arena_width, int arena_depth, int arena_cell) {
+Mesh* FlatPlain::createFlatPlane(int arena_width, int arena_depth, int arena_cell) {
 	Mesh *me = new Mesh;
 	int n = arena_width / arena_cell;
 	int m = arena_depth / arena_cell;
-	ImprovedNoise noise;
 
 	// vertices
 	for (int i = 0; i < n; i++) {
 		//double value = noise.perlinMultiscale(n, m);
 		for (int j = 0; j < m; j++) {
-			double height = noise.perlinMultiscale(i, j);
-			me->dot_vertex.push_back(Vec3<GLfloat>(i*arena_cell, height, j*arena_cell));
+			me->dot_vertex.push_back(Vec3<GLfloat>(i*arena_cell, 0.0, j*arena_cell));
 		}
 	}
 	//texture
@@ -112,7 +65,7 @@ Mesh* Lane::createPlane(int arena_width, int arena_depth, int arena_cell) {
 }
 
 //normal per face
-void Lane::calculateNormalPerFace() {
+void FlatPlain::calculateNormalPerFace() {
 	Vec3<float> v1, v2, v3, v4, v5;
 	for (int i = 0; i < this->mesh->face_index_vertex.size(); i += 3) {
 		v1 = this->mesh->dot_vertex[this->mesh->face_index_vertex[i]];
@@ -132,7 +85,7 @@ void Lane::calculateNormalPerFace() {
 }
 
 // calculate normal per vertex
-void Lane::calculateNormalPerVertex() {
+void FlatPlain::calculateNormalPerVertex() {
 	this->mesh->dot_normalPerVertex.clear();
 	this->mesh->face_index_normalPerVertex.clear();
 	Vec3<float> suma; suma.x = 0; suma.y = 0; suma.z = 0;
@@ -156,7 +109,7 @@ void Lane::calculateNormalPerVertex() {
 }
 
 // draw
-void Lane::meshToDisplayList() {
+void FlatPlain::meshToDisplayList() {
 	this->display = glGenLists(1);
 	glNewList(this->display, GL_COMPILE);
 	//if (id != 3) {
@@ -185,4 +138,33 @@ void Lane::meshToDisplayList() {
 	glDisable(GL_TEXTURE_2D);
 	//}
 	glEndList();
+}
+
+// Create texture from algorithm
+void FlatPlain::codedTexture() {
+	const int TexHeight = 128;
+	const int TexWidth = 128;
+	// create texture in memory
+	GLubyte textureImage[TexHeight][TexWidth][3];
+	ImprovedNoise noise;
+	Vec3f pixelColor;
+	for (int i = 0; i < TexHeight; i++)
+		for (int j = 0; j < TexWidth; j++) {
+			//pixelColor = marbleMap(t_scale(noise.perlinMarble(i * 5, j * 5)));
+			pixelColor = lava(t_scale(noise.perlinFireMultiscale(i * 5, j * 5)));
+			textureImage[i][j][0] = pixelColor[0] * 255;
+			textureImage[i][j][1] = pixelColor[1] * 255;
+			textureImage[i][j][2] = pixelColor[2] * 255;
+		}
+	// setup texture
+	glGenTextures(1, &this->texture);
+	glBindTexture(GL_TEXTURE_2D, this->texture);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // must set to 1 for compact data
+																				 // glTexImage2D Whith size and minification
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, TexWidth, TexHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, textureImage); // BGRA to include alpha
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 }
