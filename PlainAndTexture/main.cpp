@@ -231,8 +231,8 @@ void display(void) {
 	glPushMatrix();
 	glLoadIdentity();
 	glColor3f(1.0, 1.0, 1.0);
-	renderBitmapString(0.0, height - 13.0f, 0.0f, "Use [Mouse Left Key] to rotate");
-	renderBitmapString(0.0, height - 26.0f, 0.0f, "Use [Mouse Right Key] to scale");
+	renderBitmapString(0.0, height - 13.0f, 0.0f, "Use w, a, s, d, to move camera around.");
+	renderBitmapString(0.0, height - 26.0f, 0.0f, "Use i, k, to move forward and back.");
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
