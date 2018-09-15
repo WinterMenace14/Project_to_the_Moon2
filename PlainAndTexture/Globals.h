@@ -3,7 +3,7 @@
 
 //File to store all the include libs as well as common used data structures
 #include <vector>
-#include "ImathVec.h"
+#include <ImathVec.h>
 #include <GL/glut.h>
 #include <iostream>
 #include <fstream>

@@ -18,6 +18,7 @@ Date	: 8/30/2018
 #include "Lane.h"
 #include "Skybox.h"
 #include "FlatPlain.h"
+//#include "Cube.h"
 
 int width = 1200;
 int height = 600;
@@ -27,6 +28,7 @@ float ratio = 1.0;
 Lane *lane;
 Skybox *skybox;
 FlatPlain *flatPlain;
+//Cube *cube;
 
 // controling parameters
 int mouse_button;
@@ -61,6 +63,9 @@ void init() {
 
 	//create flatPlain object
 	flatPlain = new FlatPlain();
+
+	//create cube object
+	//cube = new Cube();
 
 	// light
 	GLfloat light_ambient[] = { 0.6, 0.6, 0.6, 0.5 };
@@ -116,6 +121,7 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 
 	//move camera back if s pressed
+
 	else if (key == 'd') {
 		angle += .01f;
 		rotate_point(.01);
@@ -138,12 +144,28 @@ void keyboard(unsigned char key, int x, int y) {
 
 	else if (key == 'k') {
 		//camera_z += 10;
-		camera_pos_x += (-10) * sin(angle);//*0.1;
+		camera_pos_x += (10) * sin(angle);//*0.1;
 		camera_pos_z += (-10) * -cos(angle);//*0.1;
 		//camera_viewing_y -= 10;
-		camera_look_x += (-10) * sin(angle);//*0.1;
+		camera_look_x += (10) * sin(angle);//*0.1;
 		camera_look_z += (-10) * -cos(angle);//*0.1;
 	}
+
+	/*
+	else if (key == 'j') {
+		camera_pos_x += (-10) * sin(angle);//*0.1;
+		camera_pos_z += (0) * -cos(angle);//*0.1;
+		camera_look_x += (-10) * sin(angle);//*0.1;
+		camera_look_z += (0) * -cos(angle);//*0.1;
+	}
+
+	else if (key == 'l') {
+		camera_pos_x += (10) * sin(angle);//*0.1;
+		camera_pos_z += (0) * -cos(angle);//*0.1;
+		camera_look_x += (10) * sin(angle);//*0.1;
+		camera_look_z += (0) * -cos(angle);//*0.1;
+	}
+	*/
 
 	glutPostRedisplay();
 }
@@ -217,11 +239,20 @@ void display(void) {
 	glCallList(skybox->getDisplayList());
 	glPopMatrix();
 
+	/*
+	// cube
+	glPushMatrix();
+	glTranslatef(-100, -30, -100); //-2500, -1000, -2500
+	glCallList(cube->getDisplayList());
+	glPopMatrix();
+	*/
+
 	// end
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+
 	// texto
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
