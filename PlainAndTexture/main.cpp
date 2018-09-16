@@ -20,6 +20,7 @@ Date	: 8/30/2018
 #include "FlatPlain.h"
 #include "Box.h"
 
+
 int width = 1200;
 int height = 600;
 float ratio = 1.0;
@@ -32,6 +33,7 @@ Creating a small enviornment with stencil and reflections
 */
 
 Skybox *skybox;
+
 //FlatPlain *flatPlain; for lava
 
 //mirror
@@ -83,6 +85,9 @@ void init() {
 
 	//create box for quiz 3
 	box = new Box(100, 100, 100);
+
+	//create cube object
+	//cube = new Cube();
 
 	// light
 	GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 }; //0.6, 0.6, 0.6, 0.5
@@ -144,6 +149,7 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 
 	//move camera back if s pressed
+
 	else if (key == 'd') {
 
 		camera_pos_x += 10;
@@ -178,7 +184,7 @@ void keyboard(unsigned char key, int x, int y) {
 
 	else if (key == 'k') {
 		//camera_z += 10;
-		camera_pos_x += (-10) * sin(angle);//*0.1;
+		camera_pos_x += (10) * sin(angle);//*0.1;
 		camera_pos_z += (-10) * -cos(angle);//*0.1;
 
 		//move box pos z
@@ -186,7 +192,7 @@ void keyboard(unsigned char key, int x, int y) {
 		box_pos_z += (-25) * -cos(angle);
 
 		//camera_viewing_y -= 10;
-		camera_look_x += (-10) * sin(angle);//*0.1;
+		camera_look_x += (10) * sin(angle);//*0.1;
 		camera_look_z += (-10) * -cos(angle);//*0.1;
 	}
 
@@ -319,6 +325,7 @@ void display(void) {
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+
 	// texto
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
