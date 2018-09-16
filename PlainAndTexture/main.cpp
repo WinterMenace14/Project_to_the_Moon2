@@ -60,7 +60,7 @@ float camera_pos_y = -175.0f; //original pos_y = 40.0f
 float camera_pos_z = 75.0f; //orig 0
 
 float camera_look_x = 0.0f; //orig 0
-float camera_look_y = -150.0f; //orig 0
+float camera_look_y = -200.0f; //orig 0
 float camera_look_z = -100.0f; //orig -1
 
 float angle = 0.0f;
