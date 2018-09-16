@@ -1,23 +1,22 @@
+
 #include "Globals.h"
 
-class FlatPlain {
+class Box {
 
 public:
-	FlatPlain(int w, int d);
-	~FlatPlain();
+	Box(int w, int h, int d);
+	~Box();
 	Mesh* getMesh();
 	GLuint getDisplayList();
-	GLuint getTexture();
-	Mesh* createFlatPlane(int arena_cell);
+	Mesh* createCube();
 	void calculateNormalPerFace();
 	void calculateNormalPerVertex();
-	void meshToDisplayList();
+	void boxToDisplayList();
 	void bmpTexture(UINT texture, const char *file);
-	void codedTexture();
 
 private:
 	Mesh* mesh;
 	GLuint display;
 	GLuint texture;
-	int width, depth;
+	int width, height, depth;
 };

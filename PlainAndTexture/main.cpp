@@ -18,6 +18,7 @@ Date	: 8/30/2018
 #include "Lane.h"
 #include "Skybox.h"
 #include "FlatPlain.h"
+#include "Box.h"
 
 int width = 1200;
 int height = 600;
@@ -25,8 +26,19 @@ float ratio = 1.0;
 
 //create variables to hold objects
 Lane *lane;
+
+/*
+Creating a small enviornment with stencil and reflections
+*/
+
 Skybox *skybox;
-FlatPlain *flatPlain;
+//FlatPlain *flatPlain; for lava
+
+//mirror
+FlatPlain *mirror;
+
+//normal box
+Box *box;
 
 // controling parameters
 int mouse_button;
@@ -36,14 +48,18 @@ float scale = 0.3;
 float x_angle = 0.0;
 float y_angle = 0.0;
 
-//variables to control camera position and looking at
-float camera_pos_x = 0.0f;
-float camera_pos_y = 40.0f;
-float camera_pos_z = 320.0f;
+float box_pos_x = 0;
+float box_pos_y = -800;
+float box_pos_z = 200;
 
-float camera_look_x = 0.0f;
-float camera_look_y = 0.0f;
-float camera_look_z = -1.0f;
+//variables to control camera position and looking at
+float camera_pos_x = 15.0f; //orig 0
+float camera_pos_y = -175.0f; //original pos_y = 40.0f
+float camera_pos_z = 75.0f; //orig 0
+
+float camera_look_x = 0.0f; //orig 0
+float camera_look_y = -150.0f; //orig 0
+float camera_look_z = -100.0f; //orig -1
 
 float angle = 0.0f;
 
@@ -59,20 +75,27 @@ void init() {
 	//create skybox object
 	skybox = new Skybox();
 
+	//mirror object
+	mirror = new FlatPlain(1000, 1000);
+
 	//create flatPlain object
-	flatPlain = new FlatPlain();
+	//flatPlain = new FlatPlain();
+
+	//create box for quiz 3
+	box = new Box(100, 100, 100);
 
 	// light
-	GLfloat light_ambient[] = { 0.6, 0.6, 0.6, 0.5 };
-	GLfloat light_diffuse[] = { 0.3, 0.3, 0.3, 0.3 };
-	GLfloat light_specular[] = { 0.5, 0.5, 0.5, 0.3 };
-	GLfloat light_position[] = { 0.0, 0.0, 3500.0, 0.0 };
+	GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 }; //0.6, 0.6, 0.6, 0.5
+	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 }; //0.3, 0.3, 0.3, 0.3
+	GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 }; //0.5, 0.5, 0.5, 0.3
+	GLfloat light_position[] = { 0.0, 0.0, 1.0, 0.0 }; //0.0, 0.0, 3500.0, 0.0
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHTING);
+	glClearStencil(0);
 }
 
 
@@ -100,25 +123,34 @@ void reshape(int w, int h) {
 }
 
 // mouse
-void mouse(int button, int state, int x, int y) {
+/*void mouse(int button, int state, int x, int y) {
 	mouse_x = x;
 	mouse_y = y;
 	mouse_button = button;
-}
+}*/
 
 //keyboard
 void keyboard(unsigned char key, int x, int y) {
 
 	//move camera forward if w pressed
 	if (key == 'a') {
-		angle += -.01f;
-		rotate_point(-.01);
+
+		//change x pos of cam and box
+		camera_pos_x += -10;
+		box_pos_x += -25;
+		//rotation of the camera
+		/*angle += -1.0f;
+		rotate_point(-1);*/
 	}
 
 	//move camera back if s pressed
 	else if (key == 'd') {
-		angle += .01f;
-		rotate_point(.01);
+
+		camera_pos_x += 10;
+		box_pos_x += 25;
+		//rotation of the camera
+		/*angle += 1.0f;
+		rotate_point(1);*/
 	}
 
 	else if (key == 'w') {
@@ -130,8 +162,16 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 
 	else if (key == 'i') {
+
+		//move camera pos
 		camera_pos_x += (10) * sin(angle);//*0.1;
 		camera_pos_z += (10) * -cos(angle);//*0.1;
+
+		//move box pos z
+		box_pos_x += (25) * sin(angle);
+		box_pos_z += (25) * -cos(angle);
+
+		//change looking
 		camera_look_x += (10) * sin(angle);//*0.1;
 		camera_look_z += (10) * -cos(angle);//*0.1;
 	}
@@ -140,6 +180,11 @@ void keyboard(unsigned char key, int x, int y) {
 		//camera_z += 10;
 		camera_pos_x += (-10) * sin(angle);//*0.1;
 		camera_pos_z += (-10) * -cos(angle);//*0.1;
+
+		//move box pos z
+		box_pos_x += (-25) * sin(angle);
+		box_pos_z += (-25) * -cos(angle);
+
 		//camera_viewing_y -= 10;
 		camera_look_x += (-10) * sin(angle);//*0.1;
 		camera_look_z += (-10) * -cos(angle);//*0.1;
@@ -149,7 +194,7 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 // motion
-void motion(int x, int y) {
+/*void motion(int x, int y) {
 	if (mouse_button == GLUT_LEFT_BUTTON) {
 		y_angle += (float(x - mouse_x) / width) *360.0;
 		x_angle += (float(y - mouse_y) / height)*360.0;
@@ -162,7 +207,7 @@ void motion(int x, int y) {
 	mouse_x = x;
 	mouse_y = y;
 	glutPostRedisplay();
-}
+}*/
 
 // text
 void renderBitmapString(float x, float y, float z, const char *string) {
@@ -174,7 +219,7 @@ void renderBitmapString(float x, float y, float z, const char *string) {
 
 // display
 void display(void) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	// projection
 	glMatrixMode(GL_PROJECTION);
@@ -199,22 +244,74 @@ void display(void) {
 	glRotatef(y_angle, 0.0f, 1.0f, 0.0f);
 	glTranslatef(0.0f, 0.0f, 0.0f);
 
+	//create the stencil
+	glEnable(GL_STENCIL_TEST);
+		glDisable(GL_DEPTH_TEST);
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); //Disable writing colors in frame buffer
+		glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF); //Place a 1 where rendered
+		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE); 	//Replace where rendered
+
+		// mirror for the stencil
+		glPushMatrix();
+		glTranslatef(-400, 0, 0);
+		glRotatef(90, 1, 0, 0);
+		glCallList(mirror->getDisplayList());
+		glPopMatrix();
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); //Reenable color
+	glEnable(GL_DEPTH_TEST);
+	glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); //Keep the pixel
+
+	//draw reflected box
+	glPushMatrix();
+	glTranslatef(box_pos_x * -1, -800, box_pos_z * -1);
+	glScalef(1, 1, -1);
+	glCallList(box->getDisplayList());
+	glPopMatrix();
+
+	//diable stencil
+	glDisable(GL_STENCIL_TEST);
+
 	//plain
 	glPushMatrix();
 	glTranslatef(-5000, -800, -5000);
 	glCallList(lane->getDisplayList());
 	glPopMatrix();
 
-	//lava
-	glPushMatrix();
-	glTranslatef(-10000, -800, -10000);
-	glCallList(flatPlain->getDisplayList());
-	glPopMatrix();
-	
 	// skybox
 	glPushMatrix();
 	glTranslatef(-10000, -3000, -10000); //-2500, -1000, -2500
 	glCallList(skybox->getDisplayList());
+	glPopMatrix();
+
+	//enable blend and disable light
+	glEnable(GL_BLEND);
+	glDisable(GL_LIGHTING);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(0.7, 0.0, 0.0, 0.3);
+	glColor4f(1.0, 1.0, 1.0, 0.3);
+	//draw the mirror
+	glPushMatrix();
+	glTranslatef(-400, 0, 0);
+	glRotatef(90, 1, 0, 0);
+	glCallList(mirror->getDisplayList());
+	glPopMatrix();
+
+	//enable lighting and disable blend
+	glEnable(GL_LIGHTING);
+	glDisable(GL_BLEND);
+
+	//lava
+	/*
+	glPushMatrix();
+	glTranslatef(-10000, -800, -10000);
+	glCallList(flatPlain->getDisplayList());
+	glPopMatrix();*/
+
+	//box
+	glPushMatrix();
+	glTranslatef(box_pos_x, box_pos_y, box_pos_z);
+	glCallList(box->getDisplayList());
 	glPopMatrix();
 
 	// end
@@ -243,7 +340,7 @@ void display(void) {
 // main
 void main(int argc, char* argv[]) {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA | GLUT_STENCIL);
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(width, height);
 	glutCreateWindow("Textures");

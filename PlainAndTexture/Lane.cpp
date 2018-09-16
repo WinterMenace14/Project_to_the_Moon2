@@ -1,6 +1,7 @@
 #include "Lane.h"
 
 Lane::Lane() {
+	
 	mesh = createPlane(10000, 10000, 200);
 	calculateNormalPerFace();
 	calculateNormalPerVertex();
@@ -79,8 +80,8 @@ Mesh* Lane::createPlane(int arena_width, int arena_depth, int arena_cell) {
 	for (int i = 0; i < n; i++) {
 		//double value = noise.perlinMultiscale(n, m);
 		for (int j = 0; j < m; j++) {
-			double height = noise.perlinMultiscale(i, j);
-			me->dot_vertex.push_back(Vec3<GLfloat>(i*arena_cell, height, j*arena_cell));
+			//double height = noise.perlinMultiscale(i, j);
+			me->dot_vertex.push_back(Vec3<GLfloat>(i*arena_cell, 0.0, j*arena_cell));
 		}
 	}
 	//texture
@@ -175,9 +176,9 @@ void Lane::meshToDisplayList() {
 			glTexCoord2fv(&this->mesh->dot_texture[this->mesh->face_index_texture[i]].x);
 		}
 		// COLOR
-		Vec3f offset = (this->mesh->dot_vertex[this->mesh->face_index_vertex[i]]);
+		//Vec3f offset = (this->mesh->dot_vertex[this->mesh->face_index_vertex[i]]);
 		// VERTEX
-		glColor3f(fabs(sin(offset.x)), fabs(cos(offset.y)), fabs(offset.z));
+		//glColor3f(fabs(sin(offset.x)), fabs(cos(offset.y)), fabs(offset.z));
 		glVertex3fv(&this->mesh->dot_vertex[this->mesh->face_index_vertex[i]].x);
 	}
 	glEnd();

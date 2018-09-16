@@ -1,15 +1,19 @@
 #include "FlatPlain.h"
 
-FlatPlain::FlatPlain() {
-	mesh = createFlatPlane(20000, 20000, 2000);
+FlatPlain::FlatPlain(int w, int d) {
+	this->width = w;
+	this->depth = d;
+	loadBMP_custom(this->texture, "bmp/brick.bmp");
+	//bmpTexture(this->texture, "bmp/brick.bmp");
+	mesh = createFlatPlane(100);
 	calculateNormalPerFace();
 	calculateNormalPerVertex();
-	codedTexture();
+	//codedTexture();
 	meshToDisplayList();
 }
 
 FlatPlain::~FlatPlain() {
-
+	//destructor
 }
 
 Mesh* FlatPlain::getMesh() {
@@ -24,10 +28,25 @@ GLuint FlatPlain::getTexture() {
 	return this->texture;
 }
 
-Mesh* FlatPlain::createFlatPlane(int arena_width, int arena_depth, int arena_cell) {
+void FlatPlain::bmpTexture(UINT texture, const char *file) {
+	BITMAPINFO *bitmapInfo; // Bitmap information
+	GLubyte    *bitmapBits; // Bitmap data
+	if (!file) {
+		cout << "texture file not found!" << endl;
+		return;
+	}
+	bitmapBits = LoadDIBitmap(file, &bitmapInfo);
+	glGenTextures(1, &this->texture);
+	glBindTexture(GL_TEXTURE_2D, this->texture);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // must set to 1 for compact data
+																				 // glTexImage2D Whith size and minification
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bitmapInfo->bmiHeader.biWidth, bitmapInfo->bmiHeader.biHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, bitmapBits);
+}
+
+Mesh* FlatPlain::createFlatPlane(int arena_cell) {
 	Mesh *me = new Mesh;
-	int n = arena_width / arena_cell;
-	int m = arena_depth / arena_cell;
+	int n = this->width / arena_cell;
+	int m = this->depth / arena_cell;
 
 	// vertices
 	for (int i = 0; i < n; i++) {
@@ -128,9 +147,9 @@ void FlatPlain::meshToDisplayList() {
 			glTexCoord2fv(&this->mesh->dot_texture[this->mesh->face_index_texture[i]].x);
 		}
 		// COLOR
-		Vec3f offset = (this->mesh->dot_vertex[this->mesh->face_index_vertex[i]]);
+		//Vec3f offset = (this->mesh->dot_vertex[this->mesh->face_index_vertex[i]]); //uncomment these for normal lava effect
 		// VERTEX
-		glColor3f(fabs(sin(offset.x)), fabs(cos(offset.y)), fabs(offset.z));
+		//glColor3f(fabs(sin(offset.x)), fabs(cos(offset.y)), fabs(offset.z)); //this one too
 		glVertex3fv(&this->mesh->dot_vertex[this->mesh->face_index_vertex[i]].x);
 	}
 	glEnd();
