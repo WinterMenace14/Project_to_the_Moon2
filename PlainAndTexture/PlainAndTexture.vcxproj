@@ -155,11 +155,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FlatPlain.h" />
     <ClInclude Include="Globals.h" />
+    <ClInclude Include="Box.h" />
     <ClInclude Include="noise.h" />
     <ClInclude Include="Skybox.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Box.cpp" />
+    <ClCompile Include="FlatPlain.cpp" />
     <ClCompile Include="Lane.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Skybox.cpp" />
