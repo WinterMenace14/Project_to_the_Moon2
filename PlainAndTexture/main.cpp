@@ -101,6 +101,15 @@ void init() {
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHTING);
 	glClearStencil(0);
+
+	//fog
+	glEnable(GL_FOG);
+	glFogi(GL_FOG_MODE, GL_LINEAR);
+	GLfloat fogColor[4] = { 0.5, 0.5, 0.5, 1.0 };
+	glFogfv(GL_FOG_COLOR, fogColor);
+	glFogf(GL_FOG_DENSITY, 0.25);
+	glFogf(GL_FOG_START, 10.0);
+	glFogf(GL_FOG_END, 6000.0);
 }
 
 
