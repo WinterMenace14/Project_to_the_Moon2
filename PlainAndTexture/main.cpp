@@ -14,12 +14,12 @@ Date	: 8/30/2018
 
 #pragma warning(disable : 4996)
 
+
 #include "Globals.h"
 #include "Lane.h"
 #include "Skybox.h"
 #include "FlatPlain.h"
 #include "Box.h"
-
 
 int width = 1200;
 int height = 600;
@@ -55,13 +55,13 @@ float box_pos_y = -800;
 float box_pos_z = 200;
 
 //variables to control camera position and looking at
-float camera_pos_x = 15.0f; //orig 0
-float camera_pos_y = -175.0f; //original pos_y = 40.0f
-float camera_pos_z = 75.0f; //orig 0
+float camera_pos_x = box_pos_x + 15; //orig 0
+float camera_pos_y = box_pos_y + 660; //original pos_y = -135.0f
+float camera_pos_z = box_pos_z + 50; //orig 0
 
-float camera_look_x = 0.0f; //orig 0
-float camera_look_y = -200.0f; //orig 0
-float camera_look_z = -100.0f; //orig -1
+float camera_look_x = box_pos_x + 15; //orig 0
+float camera_look_y = box_pos_y + 640; //orig -200
+float camera_look_z = box_pos_z - 50; //orig -1
 
 float angle = 0.0f;
 
@@ -103,13 +103,14 @@ void init() {
 	glClearStencil(0);
 
 	//fog
-	glEnable(GL_FOG);
+	/*glEnable(GL_FOG);
 	glFogi(GL_FOG_MODE, GL_LINEAR);
 	GLfloat fogColor[4] = { 0.5, 0.5, 0.5, 1.0 };
 	glFogfv(GL_FOG_COLOR, fogColor);
 	glFogf(GL_FOG_DENSITY, 0.25);
 	glFogf(GL_FOG_START, 10.0);
-	glFogf(GL_FOG_END, 6000.0);
+	glFogf(GL_FOG_END, 6000.0);*/
+
 }
 
 
@@ -150,7 +151,7 @@ void keyboard(unsigned char key, int x, int y) {
 	if (key == 'a') {
 
 		//change x pos of cam and box
-		camera_pos_x += -10;
+		//camera_pos_x += -10;
 		box_pos_x += -25;
 		//rotation of the camera
 		/*angle += -1.0f;
@@ -161,7 +162,7 @@ void keyboard(unsigned char key, int x, int y) {
 
 	else if (key == 'd') {
 
-		camera_pos_x += 10;
+		//camera_pos_x += 10;
 		box_pos_x += 25;
 		//rotation of the camera
 		/*angle += 1.0f;
@@ -169,40 +170,31 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 
 	else if (key == 'w') {
-		camera_look_y = camera_look_y + 10;
-	}
-
-	else if (key == 's') {
-		camera_look_y = camera_look_y - 10;
-	}
-
-	else if (key == 'i') {
-
 		//move camera pos
-		camera_pos_x += (10) * sin(angle);//*0.1;
-		camera_pos_z += (10) * -cos(angle);//*0.1;
+		//camera_pos_x += (10) * sin(angle);//*0.1;
+		//camera_pos_z += (10) * -cos(angle);//*0.1;
 
 		//move box pos z
-		box_pos_x += (25) * sin(angle);
+		//box_pos_x += (25) * sin(angle);
 		box_pos_z += (25) * -cos(angle);
 
 		//change looking
-		camera_look_x += (10) * sin(angle);//*0.1;
-		camera_look_z += (10) * -cos(angle);//*0.1;
+		//camera_look_x += (10) * sin(angle);//*0.1;
+		//camera_look_z += (10) * -cos(angle);//*0.1;
 	}
 
-	else if (key == 'k') {
+	else if (key == 's') {
 		//camera_z += 10;
-		camera_pos_x += (10) * sin(angle);//*0.1;
-		camera_pos_z += (-10) * -cos(angle);//*0.1;
+		//camera_pos_x += (10) * sin(angle);//*0.1;
+		//camera_pos_z += (-10) * -cos(angle);//*0.1;
 
 		//move box pos z
-		box_pos_x += (-25) * sin(angle);
+		//box_pos_x += (-25) * sin(angle);
 		box_pos_z += (-25) * -cos(angle);
 
 		//camera_viewing_y -= 10;
-		camera_look_x += (10) * sin(angle);//*0.1;
-		camera_look_z += (-10) * -cos(angle);//*0.1;
+		//camera_look_x += (10) * sin(angle);//*0.1;
+		//camera_look_z += (-10) * -cos(angle);//*0.1;
 	}
 
 	glutPostRedisplay();
@@ -249,8 +241,8 @@ void display(void) {
 	glLoadIdentity();
 
 	// lookAt
-	gluLookAt(camera_pos_x, camera_pos_y, camera_pos_z,
-		camera_look_x, camera_look_y, camera_look_z,
+	gluLookAt(box_pos_x + 15, box_pos_y + 660, box_pos_z + 50,
+		box_pos_x + 15, box_pos_y + 640, box_pos_z - 50,
 		0.0f, 1.0f, 0.0f);
 
 	// camera
@@ -259,8 +251,9 @@ void display(void) {
 	glRotatef(y_angle, 0.0f, 1.0f, 0.0f);
 	glTranslatef(0.0f, 0.0f, 0.0f);
 
+	//drawBoundingBox();
 	//create the stencil
-	glEnable(GL_STENCIL_TEST);
+	/*glEnable(GL_STENCIL_TEST);
 		glDisable(GL_DEPTH_TEST);
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); //Disable writing colors in frame buffer
 		glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF); //Place a 1 where rendered
@@ -285,13 +278,13 @@ void display(void) {
 	glPopMatrix();
 
 	//diable stencil
-	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_STENCIL_TEST); */
 
 	//plain
-	glPushMatrix();
+	/*glPushMatrix();
 	glTranslatef(-5000, -800, -5000);
 	glCallList(lane->getDisplayList());
-	glPopMatrix();
+	glPopMatrix();*/
 
 	// skybox
 	glPushMatrix();
@@ -300,7 +293,7 @@ void display(void) {
 	glPopMatrix();
 
 	//enable blend and disable light
-	glEnable(GL_BLEND);
+	/*glEnable(GL_BLEND);
 	glDisable(GL_LIGHTING);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(0.7, 0.0, 0.0, 0.3);
@@ -314,7 +307,7 @@ void display(void) {
 
 	//enable lighting and disable blend
 	glEnable(GL_LIGHTING);
-	glDisable(GL_BLEND);
+	glDisable(GL_BLEND);*/
 
 	//lava
 	/*
@@ -328,7 +321,17 @@ void display(void) {
 	glTranslatef(box_pos_x, box_pos_y, box_pos_z);
 	glCallList(box->getDisplayList());
 	glPopMatrix();
+	/***********************************************************************************/
+	//draw the bounding box around the box
+	glPushMatrix();
+	glDisable(GL_LIGHTING);
+	//glColor3f(1.0, 1.0, 1.0);
+	glTranslatef(box_pos_x, box_pos_y, box_pos_z);
+	glCallList(box->getBoundingBox());
+	glEnable(GL_LIGHTING);
+	glPopMatrix();
 
+	/************************************************************************************/
 	// end
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();

@@ -13,6 +13,8 @@
 #include "noise.h"
 
 #define PI 3.1415926
+#define MIN2(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX2(a, b) (((a) > (b)) ? (a) : (b))
 
 using namespace std;
 using namespace Imath;
@@ -295,4 +297,32 @@ inline void loadBMP_custom(GLuint texture, const char * imagepath) {
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
+}
+
+inline void calculateAABB(vector<Vec3f> vec, Vec3<GLfloat> &boundMaxP, Vec3<GLfloat> &boundMinP) {
+	
+	//check to see if the vector is empty
+	if (vec.empty()) return;
+
+	boundMaxP = vec[0];
+	boundMinP = vec[0];
+
+	//iterate through the vector of dots to find the largest and smallest
+	//per x, y, and z
+
+	for (unsigned int i = 1; i < vec.size(); i++) {
+		boundMinP.x = MIN2(boundMinP.x, vec[i].x);
+		boundMinP.y = MIN2(boundMinP.y, vec[i].y);
+		boundMinP.z = MIN2(boundMinP.z, vec[i].z);
+		boundMaxP.x = MAX2(boundMaxP.x, vec[i].x);
+		boundMaxP.y = MAX2(boundMaxP.y, vec[i].y);
+		boundMaxP.z = MAX2(boundMaxP.z, vec[i].z);
+	}
+
+	boundMinP.x = boundMinP.x - 10;
+	boundMinP.y = boundMinP.y - 10;
+	boundMinP.z = boundMinP.z - 10;
+	boundMaxP.x = boundMaxP.x + 10;
+	boundMaxP.y = boundMaxP.y + 10;
+	boundMaxP.z = boundMaxP.z + 10;
 }

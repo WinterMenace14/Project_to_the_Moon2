@@ -12,6 +12,8 @@ Box::Box(int w, int h, int d) {
 	calculateNormalPerFace();
 	calculateNormalPerVertex();
 	boxToDisplayList();
+	calculateAABB(this->mesh->dot_vertex, this->boundingMaxPoint, this->boundingMinPoint);
+	aabbToDisplayList();
 }
 
 Box::~Box() {
@@ -24,6 +26,10 @@ Mesh* Box::getMesh() {
 
 GLuint Box::getDisplayList() {
 	return this->display;
+}
+
+GLuint Box::getBoundingBox() {
+	return this->boundingBox;
 }
 
 void Box::bmpTexture(UINT texture, const char *file) {
@@ -199,5 +205,50 @@ void Box::boxToDisplayList() {
 	}
 	glDisable(GL_TEXTURE_2D);
 
+	glEndList();
+}
+
+//create the bounding box
+void Box::aabbToDisplayList() {
+	this->boundingBox = glGenLists(1);
+	glNewList(this->boundingBox, GL_COMPILE);
+
+	//using color white and draw the lines of the bounding box
+	//bottom square
+	glColor3f(1.0, 1.0, 1.0);
+	glBegin(GL_LINES);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMinPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMinPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMinPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMinPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMinPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMinPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMinPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMinPoint.y, this->boundingMaxPoint.z);
+
+	//start top square
+
+	glVertex3f(this->boundingMinPoint.x, this->boundingMaxPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMaxPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMaxPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMaxPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMaxPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMaxPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMaxPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMaxPoint.y, this->boundingMaxPoint.z);
+
+	//connect squares
+
+	glVertex3f(this->boundingMinPoint.x, this->boundingMinPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMaxPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMinPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMaxPoint.y, this->boundingMaxPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMinPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMaxPoint.x, this->boundingMaxPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMinPoint.y, this->boundingMinPoint.z);
+	glVertex3f(this->boundingMinPoint.x, this->boundingMaxPoint.y, this->boundingMinPoint.z);
+	glEnd();
+
+	//end list
 	glEndList();
 }
