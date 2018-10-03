@@ -65,8 +65,69 @@ float camera_look_z = box_pos_z - 50; //orig -1
 
 float angle = 0.0f;
 
+//create variables to control what features are displayed (default all are true)
+bool showBoundingBox = true;
+bool showFog = true;
+bool showSkyBox = true;
+
+//create a menu listener and pass in menu option
+void menuListener(int option) {
+	//check passed in option
+	switch (option) {
+	case 1:
+		if (showFog) {
+			showFog = false;
+		}
+		else
+			showFog = true;
+		break;
+	case 2:
+		if (showBoundingBox) {
+			showBoundingBox = false;
+		}
+		else
+			showBoundingBox = true;
+		break;
+	case 3:
+		if (showSkyBox) {
+			showSkyBox = false;
+		}
+		else
+			showSkyBox = true;
+		break;
+	}
+	glutPostRedisplay();
+}
+
+//menu function to create menus to swap between showing
+//features
+void createMenus() {
+
+	//create fog menu
+	int fogMenu = glutCreateMenu(menuListener);
+	glutAddMenuEntry("Enable/Disable", 1);
+
+	//create bounding box menu
+	int boundBoxMenu = glutCreateMenu(menuListener);
+	glutAddMenuEntry("Enable/Disable", 2);
+
+	//create skybox menu
+	int skyBoxMenu = glutCreateMenu(menuListener);
+	glutAddMenuEntry("Enable/Disable", 3);
+
+	//create main menu
+	int mainMenu = glutCreateMenu(menuListener);
+	glutAddSubMenu("Fog", fogMenu);
+	glutAddSubMenu("AABB", boundBoxMenu);
+	glutAddSubMenu("Skybox", skyBoxMenu);
+
+	//attatch menu to right mouse button
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
 // init
 void init() {
+	createMenus();
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 	ratio = (double)width / (double)height;
@@ -102,17 +163,15 @@ void init() {
 	glEnable(GL_LIGHTING);
 	glClearStencil(0);
 
-	//fog
-	/*glEnable(GL_FOG);
+	glEnable(GL_FOG);
 	glFogi(GL_FOG_MODE, GL_LINEAR);
 	GLfloat fogColor[4] = { 0.5, 0.5, 0.5, 1.0 };
 	glFogfv(GL_FOG_COLOR, fogColor);
 	glFogf(GL_FOG_DENSITY, 0.25);
 	glFogf(GL_FOG_START, 10.0);
-	glFogf(GL_FOG_END, 6000.0);*/
+	glFogf(GL_FOG_END, 6000.0);
 
 }
-
 
 // rotate what the user see
 void rotate_point(float angle) {
@@ -251,7 +310,6 @@ void display(void) {
 	glRotatef(y_angle, 0.0f, 1.0f, 0.0f);
 	glTranslatef(0.0f, 0.0f, 0.0f);
 
-	//drawBoundingBox();
 	//create the stencil
 	/*glEnable(GL_STENCIL_TEST);
 		glDisable(GL_DEPTH_TEST);
@@ -281,16 +339,31 @@ void display(void) {
 	glDisable(GL_STENCIL_TEST); */
 
 	//plain
-	/*glPushMatrix();
+	glPushMatrix();
 	glTranslatef(-5000, -800, -5000);
 	glCallList(lane->getDisplayList());
-	glPopMatrix();*/
+	glPopMatrix();
+
+	// Displaying Fog
+	/*********************************************************************/
+	if (!showFog) {
+		glDisable(GL_FOG);
+	}
+
+	else if (showFog) {
+		glEnable(GL_FOG);
+	}
+	/*********************************************************************/
 
 	// skybox
-	glPushMatrix();
-	glTranslatef(-10000, -3000, -10000); //-2500, -1000, -2500
-	glCallList(skybox->getDisplayList());
-	glPopMatrix();
+	/*********************************************************************/
+	if (showSkyBox) {
+		glPushMatrix();
+		glTranslatef(-10000, -3000, -10000); //-2500, -1000, -2500
+		glCallList(skybox->getDisplayList());
+		glPopMatrix();
+	}
+	/*********************************************************************/
 
 	//enable blend and disable light
 	/*glEnable(GL_BLEND);
@@ -321,18 +394,22 @@ void display(void) {
 	glTranslatef(box_pos_x, box_pos_y, box_pos_z);
 	glCallList(box->getDisplayList());
 	glPopMatrix();
-	/***********************************************************************************/
-	//draw the bounding box around the box
-	glPushMatrix();
-	glDisable(GL_LIGHTING);
-	//glColor3f(1.0, 1.0, 1.0);
-	glTranslatef(box_pos_x, box_pos_y, box_pos_z);
-	glCallList(box->getBoundingBox());
-	glEnable(GL_LIGHTING);
-	glPopMatrix();
 
-	/************************************************************************************/
-	// end
+	//Bounding Boxes - By default are enabled
+	if (showBoundingBox) {
+		/***********************************************************************************/
+		//draw the bounding box around the box
+		glPushMatrix();
+		glDisable(GL_LIGHTING);
+		glTranslatef(box_pos_x, box_pos_y, box_pos_z);
+		glCallList(box->getBoundingBox());
+		glEnable(GL_LIGHTING);
+		glPopMatrix();
+
+		/************************************************************************************/
+	}
+
+	// end - of all drawing
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
