@@ -34,10 +34,10 @@ Creating a small enviornment with stencil and reflections
 
 Skybox *skybox;
 
-//FlatPlain *flatPlain; for lava
+FlatPlain *flatPlain; //for lava
 
 //mirror
-FlatPlain *mirror;
+//FlatPlain *mirror;
 
 //normal box
 Box *box;
@@ -69,32 +69,40 @@ float angle = 0.0f;
 bool showBoundingBox = true;
 bool showFog = true;
 bool showSkyBox = true;
+bool showFlatPlain = true;
 
 //create a menu listener and pass in menu option
 void menuListener(int option) {
 	//check passed in option
 	switch (option) {
-	case 1:
-		if (showFog) {
-			showFog = false;
-		}
-		else
-			showFog = true;
-		break;
-	case 2:
-		if (showBoundingBox) {
-			showBoundingBox = false;
-		}
-		else
-			showBoundingBox = true;
-		break;
-	case 3:
-		if (showSkyBox) {
-			showSkyBox = false;
-		}
-		else
-			showSkyBox = true;
-		break;
+		case 1:
+			if (showFog) {
+				showFog = false;
+			}
+			else
+				showFog = true;
+			break;
+		case 2:
+			if (showBoundingBox) {
+				showBoundingBox = false;
+			}
+			else
+				showBoundingBox = true;
+			break;
+		case 3:
+			if (showSkyBox) {
+				showSkyBox = false;
+			}
+			else
+				showSkyBox = true;
+			break;
+		case 4:
+			if (showFlatPlain) {
+				showFlatPlain = false;
+			}
+			else
+				showFlatPlain = true;
+			break;
 	}
 	glutPostRedisplay();
 }
@@ -115,11 +123,16 @@ void createMenus() {
 	int skyBoxMenu = glutCreateMenu(menuListener);
 	glutAddMenuEntry("Enable/Disable", 3);
 
+	//create flat plain menu
+	int flatPlainMenu = glutCreateMenu(menuListener);
+	glutAddMenuEntry("Enable/Disable", 4);
+
 	//create main menu
 	int mainMenu = glutCreateMenu(menuListener);
 	glutAddSubMenu("Fog", fogMenu);
 	glutAddSubMenu("AABB", boundBoxMenu);
 	glutAddSubMenu("Skybox", skyBoxMenu);
+	glutAddSubMenu("Flat Plane", flatPlainMenu);
 
 	//attatch menu to right mouse button
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -139,10 +152,10 @@ void init() {
 	skybox = new Skybox();
 
 	//mirror object
-	mirror = new FlatPlain(1000, 1000);
+	//mirror = new FlatPlain(1000, 1000);
 
 	//create flatPlain object
-	//flatPlain = new FlatPlain();
+	flatPlain = new FlatPlain(1000, 1000);
 
 	//create box for quiz 3
 	box = new Box(100, 100, 100);
@@ -339,17 +352,16 @@ void display(void) {
 	glDisable(GL_STENCIL_TEST); */
 
 	//plain
-	glPushMatrix();
-	glTranslatef(-5000, -800, -5000);
-	glCallList(lane->getDisplayList());
-	glPopMatrix();
+	//glPushMatrix();
+	//glTranslatef(-5000, -800, -5000);
+	//glCallList(lane->getDisplayList());
+	//glPopMatrix();
 
 	// Displaying Fog
 	/*********************************************************************/
 	if (!showFog) {
 		glDisable(GL_FOG);
 	}
-
 	else if (showFog) {
 		glEnable(GL_FOG);
 	}
@@ -361,6 +373,19 @@ void display(void) {
 		glPushMatrix();
 		glTranslatef(-10000, -3000, -10000); //-2500, -1000, -2500
 		glCallList(skybox->getDisplayList());
+		glPopMatrix();
+	}
+	/*********************************************************************/
+
+	// Displaying Flat Plain
+	/*********************************************************************/
+	if (!showFlatPlain) {
+		
+	}
+	else if (showFlatPlain) {
+		glPushMatrix();
+		glTranslatef(-5000, -800, -5000);
+		glCallList(lane->getDisplayList());
 		glPopMatrix();
 	}
 	/*********************************************************************/
