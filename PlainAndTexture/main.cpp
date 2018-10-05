@@ -25,6 +25,8 @@ int width = 1200;
 int height = 600;
 float ratio = 1.0;
 
+GLuint astroDisplayList;
+
 //create variables to hold objects
 Lane *lane;
 
@@ -138,6 +140,28 @@ void createMenus() {
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
+/**
+ * meshToDisplayList
+ */
+GLuint astroToDisplayList(Mesh* m, int id) {
+	GLuint listID = glGenLists(id);
+	glNewList(listID, GL_COMPILE);
+	glBegin(GL_TRIANGLES);
+	for (unsigned int i = 0; i < m->face_index_vertex.size(); i++) {
+		if (!m->dot_normalPerVertex.empty() && !m->face_index_normalPerVertex.empty())
+			glNormal3fv(&m->dot_normalPerVertex[m->face_index_normalPerVertex[i]].x);
+		if (!m->dot_texture.empty() && !m->face_index_texture.empty())
+			glTexCoord2fv(&m->dot_texture[m->face_index_texture[i]].x);
+		// color
+		Vec3f offset = (m->dot_vertex[m->face_index_vertex[i]]);
+		glColor3f(fabs(sin(offset.x)), fabs(cos(offset.y)), fabs(offset.z));
+		glVertex3fv(&m->dot_vertex[m->face_index_vertex[i]].x);
+	}
+	glEnd();
+	glEndList();
+	return listID;
+}
+
 // init
 void init() {
 	createMenus();
@@ -159,6 +183,11 @@ void init() {
 
 	//create box for quiz 3
 	box = new Box(100, 100, 100);
+
+	Mesh* mesh = loadFile("./obj/astro.obj");
+	if (mesh == NULL) exit(1);
+	astroDisplayList = astroToDisplayList(mesh, 1);
+
 
 	//create cube object
 	//cube = new Cube();
@@ -367,7 +396,7 @@ void display(void) {
 	}
 	/*********************************************************************/
 
-	// skybox
+	// Skybox
 	/*********************************************************************/
 	if (showSkyBox) {
 		glPushMatrix();
@@ -414,15 +443,23 @@ void display(void) {
 	glCallList(flatPlain->getDisplayList());
 	glPopMatrix();*/
 
+	//Create Game Objects
+	/************************************************************************************/
+	//box
+	glPushMatrix();
+	glTranslatef(0, -800, 200);
+	glCallList(astroDisplayList);
+	glPopMatrix();
 	//box
 	glPushMatrix();
 	glTranslatef(box_pos_x, box_pos_y, box_pos_z);
 	glCallList(box->getDisplayList());
 	glPopMatrix();
+	/************************************************************************************/
 
 	//Bounding Boxes - By default are enabled
+	/************************************************************************************/
 	if (showBoundingBox) {
-		/***********************************************************************************/
 		//draw the bounding box around the box
 		glPushMatrix();
 		glDisable(GL_LIGHTING);
@@ -431,8 +468,9 @@ void display(void) {
 		glEnable(GL_LIGHTING);
 		glPopMatrix();
 
-		/************************************************************************************/
 	}
+	/************************************************************************************/
+
 
 	// end - of all drawing
 	glMatrixMode(GL_PROJECTION);

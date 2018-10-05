@@ -63,33 +63,6 @@ inline Vec3f lava(float a) {
 	return ((1 - a) * red + a * color);
 }
 
-/*
-// Create texture from algorithm
-void codedTexture(UINT textureArray[], int n, int type) {
-	const int TexHeight = 128;
-	const int TexWidth = 128;
-	// create texture in memory
-	GLubyte textureImage[TexHeight][TexWidth][3];
-	ImprovedNoise noise;
-	Vec3f pixelColor;
-	for (int i = 0; i < TexHeight; i++) {
-		for (int j = 0; j < TexWidth; j++) {
-			if (type == 0) pixelColor = skyMap(t_scale(noise.perlinMultiscale(i * 5, j * 5)));
-			else pixelColor = marbleMap(t_scale(noise.perlinMarble(i * 5, j * 5)));
-			textureImage[i][j][0] = pixelColor[0] * 255;
-			textureImage[i][j][1] = pixelColor[1] * 255;
-			textureImage[i][j][2] = pixelColor[2] * 255;
-		}
-	}
-	// setup texture
-	glGenTextures(1, &textureArray[n]);
-	glBindTexture(GL_TEXTURE_2D, textureArray[n]);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // must set to 1 for compact data
-																				 // glTexImage2D Whith size and minification
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, TexWidth, TexHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, textureImage); // BGRA to include alpha
-}
-*/
-
 // Load a DIB/BMP file from disk.
 inline GLubyte *LoadDIBitmap(const char *filename, BITMAPINFO **info) {
 	FILE *fp;      // open file pointer
