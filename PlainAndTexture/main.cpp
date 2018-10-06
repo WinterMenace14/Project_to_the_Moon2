@@ -142,7 +142,7 @@ void createMenus() {
 
 /**
  * meshToDisplayList
- */
+ *//*
 GLuint astroToDisplayList(Mesh* m, int id) {
 	GLuint listID = glGenLists(id);
 	glNewList(listID, GL_COMPILE);
@@ -160,7 +160,7 @@ GLuint astroToDisplayList(Mesh* m, int id) {
 	glEnd();
 	glEndList();
 	return listID;
-}
+}*/
 
 // init
 void init() {
@@ -184,9 +184,9 @@ void init() {
 	//create box for quiz 3
 	box = new Box(100, 100, 100);
 
-	Mesh* mesh = loadFile("./obj/astro.obj");
-	if (mesh == NULL) exit(1);
-	astroDisplayList = astroToDisplayList(mesh, 1);
+	//Mesh* mesh = loadFile("./obj/astro.obj");
+	//if (mesh == NULL) exit(1);
+	//astroDisplayList = astroToDisplayList(mesh, 1);
 
 
 	//create cube object
@@ -409,7 +409,10 @@ void display(void) {
 	// Displaying Flat Plain
 	/*********************************************************************/
 	if (!showFlatPlain) {
-		
+		glPushMatrix();
+		glTranslatef(-5000, -800, -5000);
+		glCallList(lane->getPerlinDisplayList());
+		glPopMatrix();
 	}
 	else if (showFlatPlain) {
 		glPushMatrix();
