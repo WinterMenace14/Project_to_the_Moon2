@@ -67,11 +67,20 @@ float camera_look_z = box_pos_z - 50; //orig -1
 
 float angle = 0.0f;
 
+// Shadows
+GLfloat light_position[4];
+GLfloat shadow_matrix[4][4];
+Vec3f floor_normal;
+vector<Vec3f> dot_vertex_floor;
+float lightAngle = 0.0, lightHeight = 100;
+int renderShadow = 1;
+
 //create variables to control what features are displayed (default all are true)
 bool showBoundingBox = true;
 bool showFog = true;
 bool showSkyBox = true;
 bool showFlatPlain = true;
+bool showShadow = true;
 
 //create a menu listener and pass in menu option
 void menuListener(int option) {
@@ -105,6 +114,13 @@ void menuListener(int option) {
 			else
 				showFlatPlain = true;
 			break;
+		case 5:
+			if (showShadow) {
+				showShadow = false;
+			}
+			else
+				showShadow = true;
+			break;
 	}
 	glutPostRedisplay();
 }
@@ -129,16 +145,96 @@ void createMenus() {
 	int flatPlainMenu = glutCreateMenu(menuListener);
 	glutAddMenuEntry("Enable/Disable", 4);
 
+	//create shadow menu
+	int shadowMenu = glutCreateMenu(menuListener);
+	glutAddMenuEntry("Enable/Disable", 5);
+
 	//create main menu
 	int mainMenu = glutCreateMenu(menuListener);
 	glutAddSubMenu("Fog", fogMenu);
 	glutAddSubMenu("AABB", boundBoxMenu);
 	glutAddSubMenu("Skybox", skyBoxMenu);
 	glutAddSubMenu("Flat Plane", flatPlainMenu);
+	glutAddSubMenu("Shadow", shadowMenu);
 
 	//attatch menu to right mouse button
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
+
+// calculate floor normal
+void calculate_floor_normal(Vec3f *plane, vector<Vec3f> dot_floor) {
+	Vec3<GLfloat> AB = dot_floor[1] - dot_floor[0];
+	Vec3<GLfloat> AC = dot_floor[2] - dot_floor[0];
+	*plane = AB.cross(AC);
+}
+
+// Create a matrix that will project the desired shadow
+void shadowMatrix(GLfloat shadowMat[4][4], Vec3f plane_normal, GLfloat lightpos[4]) {
+	GLfloat dot;
+	Vec3f lightpos_v; lightpos_v.x = lightpos[0]; lightpos_v.y = lightpos[1]; lightpos_v.z = lightpos[2];
+	dot = plane_normal.dot(lightpos_v);
+	shadowMat[0][0] = dot - lightpos[0] * plane_normal[0];
+	shadowMat[1][0] = 0.f - lightpos[0] * plane_normal[1];
+	shadowMat[2][0] = 0.f - lightpos[0] * plane_normal[2];
+	shadowMat[3][0] = 0.f - lightpos[0] * plane_normal[3];
+	shadowMat[0][1] = 0.f - lightpos[1] * plane_normal[0];
+	shadowMat[1][1] = dot - lightpos[1] * plane_normal[1];
+	shadowMat[2][1] = 0.f - lightpos[1] * plane_normal[2];
+	shadowMat[3][1] = 0.f - lightpos[1] * plane_normal[3];
+	shadowMat[0][2] = 0.f - lightpos[2] * plane_normal[0];
+	shadowMat[1][2] = 0.f - lightpos[2] * plane_normal[1];
+	shadowMat[2][2] = dot - lightpos[2] * plane_normal[2];
+	shadowMat[3][2] = 0.f - lightpos[2] * plane_normal[3];
+	shadowMat[0][3] = 0.f - lightpos[3] * plane_normal[0];
+	shadowMat[1][3] = 0.f - lightpos[3] * plane_normal[1];
+	shadowMat[2][3] = 0.f - lightpos[3] * plane_normal[2];
+	shadowMat[3][3] = dot - lightpos[3] * plane_normal[3];
+}
+
+// normal per face
+void calculateNormalPerFace(Mesh* m) {
+	Vec3<float> v1, v2, v3, v4, v5;
+	for (int i = 0; i < m->face_index_vertex.size(); i += 3) {
+		v1 = m->dot_vertex[m->face_index_vertex[i]];
+		v2 = m->dot_vertex[m->face_index_vertex[i + 1]];
+		v3 = m->dot_vertex[m->face_index_vertex[i + 2]];
+		v4 = (v2 - v1);
+		v5 = (v3 - v1);
+		v4 = v4.cross(v5);
+		v4.normalize();
+		m->dot_normalPerFace.push_back(v4);
+		int pos = m->dot_normalPerFace.size() - 1;
+		// same normal for all vertex in this face
+		m->face_index_normalPerFace.push_back(pos);
+		m->face_index_normalPerFace.push_back(pos);
+		m->face_index_normalPerFace.push_back(pos);
+	}
+}
+
+// calculate normal per vertex
+void calculateNormalPerVertex(Mesh* m) {
+	m->dot_normalPerVertex.clear();
+	m->face_index_normalPerVertex.clear();
+	Vec3<float> suma; suma.x = 0; suma.y = 0; suma.z = 0;
+	//initialize
+	for (unsigned int val = 0; val < m->dot_vertex.size(); val++) {
+		m->dot_normalPerVertex.push_back(suma);
+	}
+	// calculate sum for vertex
+	for (long pos = 0; pos < m->face_index_vertex.size(); pos++) {
+		m->dot_normalPerVertex[m->face_index_vertex[pos]] +=
+			m->dot_normalPerFace[m->face_index_normalPerFace[pos]];
+	}
+	// normalize for vertex 
+	for (unsigned int val = 0; val < m->dot_normalPerVertex.size(); val++) {
+		m->dot_normalPerVertex[val] = m->dot_normalPerVertex[val].normalize();
+	}
+	//normalVertexIndex is the same that vertexIndex
+	for (unsigned int pos = 0; pos < m->face_index_vertex.size(); pos++) {
+		m->face_index_normalPerVertex.push_back(m->face_index_vertex[pos]);
+	}
+}
+
 
 /**
  * meshToDisplayList
@@ -192,6 +288,12 @@ void init() {
 	//create cube object
 	//cube = new Cube();
 
+	calculateNormalPerFace(lane->getMesh);
+	calculateNormalPerFace(box->getMesh);
+
+	calculateNormalPerVertex(lane->getMesh);
+	calculateNormalPerVertex(box->getMesh);
+
 	// light
 	GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 }; //0.6, 0.6, 0.6, 0.5
 	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 }; //0.3, 0.3, 0.3, 0.3
@@ -213,6 +315,30 @@ void init() {
 	glFogf(GL_FOG_START, 10.0);
 	glFogf(GL_FOG_END, 6000.0);
 
+	// shadow
+	glClearStencil(0);
+	// floor vertex
+	dot_vertex_floor.push_back(Vec3<GLfloat>(-2000.0, 0.0, 2000.0));
+	dot_vertex_floor.push_back(Vec3<GLfloat>(2000.0, 0.0, 2000.0));
+	dot_vertex_floor.push_back(Vec3<GLfloat>(2000.0, 0.0, -2000.0));
+	dot_vertex_floor.push_back(Vec3<GLfloat>(-2000.0, 0.0, -2000.0));
+	calculate_floor_normal(&floor_normal, dot_vertex_floor);
+	// light
+	GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
+	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
+	GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHTING);
+
+	//init the shadow matrix
+	light_position[0] = 500 * cos(lightAngle);
+	light_position[1] = lightHeight;
+	light_position[2] = 500 * sin(lightAngle);
+	light_position[3] = 0.0; // directional light
+	shadowMatrix(shadow_matrix, floor_normal, light_position);
 }
 
 // rotate what the user see
@@ -421,6 +547,40 @@ void display(void) {
 		glPopMatrix();
 	}
 	/*********************************************************************/
+
+	// Shadow
+	/********************************************************************/
+	if (showShadow) {
+		glEnable(GL_STENCIL_TEST);
+		glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
+		glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+		glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
+		glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
+		//glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); 
+		//  To eliminate depth buffer artifacts, use glEnable(GL_POLYGON_OFFSET_FILL);
+		//glEnable(GL_POLYGON_OFFSET_FILL);
+		// Render 50% black shadow color on top of whatever the floor appareance is
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_LIGHTING);  /* Force the 50% black. */
+		glColor4f(0.0, 0.0, 0.0, 0.5);
+		glPushMatrix();
+		// Project the shadow
+		glMultMatrixf((GLfloat *)shadow_matrix);
+		// boxes
+		glDisable(GL_DEPTH_TEST);
+		glTranslatef(box_pos_x, 0.0f, box_pos_z);
+		glCallList(box->getDisplayList);
+
+		glEnable(GL_DEPTH_TEST);
+		glPopMatrix();
+		glDisable(GL_BLEND);
+		glEnable(GL_LIGHTING);
+		// To eliminate depth buffer artifacts, use glDisable(GL_POLYGON_OFFSET_FILL);
+		//glDisable(GL_POLYGON_OFFSET_FILL);
+		glDisable(GL_STENCIL_TEST);
+	}
+	
 
 	//enable blend and disable light
 	/*glEnable(GL_BLEND);
