@@ -71,7 +71,7 @@ float angle = 0.0f;
 bool showBoundingBox = true;
 bool showFog = true;
 bool showSkyBox = true;
-bool showFlatPlain = true;
+//bool showFlatPlain = true;
 
 //create a menu listener and pass in menu option
 void menuListener(int option) {
@@ -98,13 +98,13 @@ void menuListener(int option) {
 			else
 				showSkyBox = true;
 			break;
-		case 4:
+		/*case 4:
 			if (showFlatPlain) {
 				showFlatPlain = false;
 			}
 			else
 				showFlatPlain = true;
-			break;
+			break;*/
 	}
 	glutPostRedisplay();
 }
@@ -126,15 +126,15 @@ void createMenus() {
 	glutAddMenuEntry("Enable/Disable", 3);
 
 	//create flat plain menu
-	int flatPlainMenu = glutCreateMenu(menuListener);
-	glutAddMenuEntry("Enable/Disable", 4);
+	/*int flatPlainMenu = glutCreateMenu(menuListener);
+	glutAddMenuEntry("Enable/Disable", 4);*/
 
 	//create main menu
 	int mainMenu = glutCreateMenu(menuListener);
 	glutAddSubMenu("Fog", fogMenu);
 	glutAddSubMenu("AABB", boundBoxMenu);
 	glutAddSubMenu("Skybox", skyBoxMenu);
-	glutAddSubMenu("Flat Plane", flatPlainMenu);
+	//glutAddSubMenu("Flat Plane", flatPlainMenu);
 
 	//attatch menu to right mouse button
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -252,8 +252,9 @@ void keyboard(unsigned char key, int x, int y) {
 	if (key == 'a') {
 
 		//change x pos of cam and box
-		//camera_pos_x += -10;
-		box_pos_x += -25;
+		camera_look_x += -10;
+		camera_pos_x += -10;
+		box_pos_x += -33.333333;
 		//rotation of the camera
 		/*angle += -1.0f;
 		rotate_point(-1);*/
@@ -263,8 +264,9 @@ void keyboard(unsigned char key, int x, int y) {
 
 	else if (key == 'd') {
 
-		//camera_pos_x += 10;
-		box_pos_x += 25;
+		camera_look_x += 10;
+		camera_pos_x += 10;
+		box_pos_x += 33.333333;
 		//rotation of the camera
 		/*angle += 1.0f;
 		rotate_point(1);*/
@@ -277,7 +279,9 @@ void keyboard(unsigned char key, int x, int y) {
 
 		//move box pos z
 		//box_pos_x += (25) * sin(angle);
-		box_pos_z += (25) * -cos(angle);
+		camera_look_z += -10;
+		camera_pos_z += -10;
+		box_pos_z += -33.333333;
 
 		//change looking
 		//camera_look_x += (10) * sin(angle);//*0.1;
@@ -291,7 +295,9 @@ void keyboard(unsigned char key, int x, int y) {
 
 		//move box pos z
 		//box_pos_x += (-25) * sin(angle);
-		box_pos_z += (-25) * -cos(angle);
+		camera_look_z += 10;
+		camera_pos_z += 10;
+		box_pos_z += 33.333333;
 
 		//camera_viewing_y -= 10;
 		//camera_look_x += (10) * sin(angle);//*0.1;
@@ -342,8 +348,8 @@ void display(void) {
 	glLoadIdentity();
 
 	// lookAt
-	gluLookAt(box_pos_x + 15, box_pos_y + 660, box_pos_z + 50,
-		box_pos_x + 15, box_pos_y + 640, box_pos_z - 50,
+	gluLookAt(camera_pos_x, camera_pos_y, camera_pos_z,
+		camera_look_x, camera_look_y, camera_look_z,
 		0.0f, 1.0f, 0.0f);
 
 	// camera
@@ -408,18 +414,16 @@ void display(void) {
 
 	// Displaying Flat Plain
 	/*********************************************************************/
-	if (!showFlatPlain) {
+	/*if (!showFlatPlain) {
 		glPushMatrix();
 		glTranslatef(-5000, -800, -5000);
 		glCallList(lane->getPerlinDisplayList());
 		glPopMatrix();
-	}
-	else if (showFlatPlain) {
-		glPushMatrix();
-		glTranslatef(-5000, -800, -5000);
-		glCallList(lane->getDisplayList());
-		glPopMatrix();
-	}
+	}*/
+	glPushMatrix();
+	glTranslatef(-5000, -800, -5000);
+	glCallList(lane->getDisplayList());
+	glPopMatrix();
 	/*********************************************************************/
 
 	//enable blend and disable light
@@ -449,10 +453,10 @@ void display(void) {
 	//Create Game Objects
 	/************************************************************************************/
 	//box
-	glPushMatrix();
+	/*glPushMatrix();
 	glTranslatef(0, -800, 200);
 	glCallList(astroDisplayList);
-	glPopMatrix();
+	glPopMatrix();*/
 	//box
 	glPushMatrix();
 	glTranslatef(box_pos_x, box_pos_y, box_pos_z);

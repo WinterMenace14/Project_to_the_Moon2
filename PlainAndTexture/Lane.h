@@ -9,9 +9,9 @@ public:
 	Mesh* getMesh();
 	GLuint getDisplayList();
 	GLuint getTexture();
-	GLuint getPerlinDisplayList();
+	//GLuint getPerlinDisplayList();
 	Mesh* createPlane(int arena_width, int arena_depth, int arena_cell);
-	Mesh* createPerlinPlain(int arena_width, int arena_depth, int arena_cell);
+	//Mesh* createPerlinPlain(int arena_width, int arena_depth, int arena_cell);
 	void calculateNormalPerFace();
 	void calculateNormalPerVertex();
 	void codedTexture();
@@ -20,8 +20,8 @@ public:
 
 private:
 	Mesh* mesh;
-	Mesh* perlinMesh;
+	//Mesh* perlinMesh;
 	GLuint display;
-	GLuint perlinDisplay;
+	//GLuint perlinDisplay;
 	GLuint texture;
 };

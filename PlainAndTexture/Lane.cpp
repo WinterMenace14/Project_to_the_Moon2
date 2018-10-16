@@ -3,7 +3,7 @@
 Lane::Lane() {
 	
 	mesh = createPlane(10000, 10000, 200);
-	perlinMesh = createPerlinPlain(10000, 10000, 20);
+	//perlinMesh = createPerlinPlain(10000, 10000, 20);
 	calculateNormalPerFace();
 	calculateNormalPerVertex();
 	bmpTexture(this->texture, "bmp/brick.bmp");
@@ -23,9 +23,9 @@ GLuint Lane::getDisplayList() {
 	return this->display;
 }
 
-GLuint Lane::getPerlinDisplayList() {
+/*GLuint Lane::getPerlinDisplayList() {
 	return this->perlinDisplay;
-}
+}*/
 
 GLuint Lane::getTexture() {
 	return this->texture;
@@ -118,7 +118,7 @@ Mesh* Lane::createPlane(int arena_width, int arena_depth, int arena_cell) {
 }
 
 //perlin noise plain
-Mesh* Lane::createPerlinPlain(int arena_width, int arena_depth, int arena_cell) {
+/*Mesh* Lane::createPerlinPlain(int arena_width, int arena_depth, int arena_cell) {
 	Mesh *me = new Mesh;
 	int n = arena_width / arena_cell;
 	int m = arena_depth / arena_cell;
@@ -158,7 +158,7 @@ Mesh* Lane::createPerlinPlain(int arena_width, int arena_depth, int arena_cell) 
 		}
 	}
 	return me;
-}
+}*/
 
 //normal per face
 void Lane::calculateNormalPerFace() {
@@ -180,7 +180,7 @@ void Lane::calculateNormalPerFace() {
 	}
 
 	//perlin mesh
-	for (int i = 0; i < this->perlinMesh->face_index_vertex.size(); i += 3) {
+	/*for (int i = 0; i < this->perlinMesh->face_index_vertex.size(); i += 3) {
 		v1 = this->perlinMesh->dot_vertex[this->perlinMesh->face_index_vertex[i]];
 		v2 = this->perlinMesh->dot_vertex[this->perlinMesh->face_index_vertex[i + 1]];
 		v3 = this->perlinMesh->dot_vertex[this->perlinMesh->face_index_vertex[i + 2]];
@@ -194,7 +194,7 @@ void Lane::calculateNormalPerFace() {
 		this->perlinMesh->face_index_normalPerFace.push_back(pos);
 		this->perlinMesh->face_index_normalPerFace.push_back(pos);
 		this->perlinMesh->face_index_normalPerFace.push_back(pos);
-	}
+	}*/
 }
 
 // calculate normal per vertex
@@ -221,7 +221,7 @@ void Lane::calculateNormalPerVertex() {
 	}
 
 	//perlin mesh
-	suma.x = 0; suma.y = 0; suma.z = 0;
+	/*suma.x = 0; suma.y = 0; suma.z = 0;
 	for (unsigned int val = 0; val < this->perlinMesh->dot_vertex.size(); val++) {
 		this->perlinMesh->dot_normalPerVertex.push_back(suma);
 	}
@@ -237,7 +237,7 @@ void Lane::calculateNormalPerVertex() {
 	//normalVertexIndex is the same that vertexIndex
 	for (unsigned int pos = 0; pos < this->perlinMesh->face_index_vertex.size(); pos++) {
 		this->perlinMesh->face_index_normalPerVertex.push_back(this->perlinMesh->face_index_vertex[pos]);
-	}
+	}*/
 }
 
 // draw
@@ -272,7 +272,7 @@ void Lane::meshToDisplayList() {
 	glEndList();
 
 	//perlinDisplay
-	this->perlinDisplay = glGenLists(1);
+	/*this->perlinDisplay = glGenLists(1);
 	glNewList(this->perlinDisplay, GL_COMPILE);
 	//if (id != 3) {
 	glEnable(GL_TEXTURE_2D);
@@ -299,5 +299,5 @@ void Lane::meshToDisplayList() {
 	//if (id != 3) {
 	glDisable(GL_TEXTURE_2D);
 	//}
-	glEndList();
+	glEndList();*/
 }
