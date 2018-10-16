@@ -25,8 +25,6 @@ int width = 1200;
 int height = 600;
 float ratio = 1.0;
 
-GLuint astroDisplayList;
-
 //create variables to hold objects
 Lane *lane;
 
