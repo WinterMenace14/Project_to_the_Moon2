@@ -20,6 +20,7 @@ Date	: 8/30/2018
 #include "Skybox.h"
 #include "FlatPlain.h"
 #include "Box.h"
+#include "Player.h"
 
 int width = 1200;
 int height = 600;
@@ -40,7 +41,10 @@ FlatPlain *flatPlain; //for lava
 //FlatPlain *mirror;
 
 //normal box
-Box *box;
+//Box *box;
+
+//astro model
+Player *p1;
 
 // controling parameters
 int mouse_button;
@@ -180,7 +184,9 @@ void init() {
 	flatPlain = new FlatPlain(1000, 1000);
 
 	//create box for quiz 3
-	box = new Box(100, 100, 100);
+	//box = new Box(100, 100, 100);
+
+	p1 = new Player();
 
 	//Mesh* mesh = loadFile("./obj/astro.obj");
 	//if (mesh == NULL) exit(1);
@@ -458,13 +464,15 @@ void display(void) {
 	//box
 	glPushMatrix();
 	glTranslatef(box_pos_x, box_pos_y, box_pos_z);
-	glCallList(box->getDisplayList());
+	glRotatef(90, 0.0, 1.0, 0.0);
+	glScalef(25.0, 25.0, 25.0);
+	glCallList(p1->getDisplayList());
 	glPopMatrix();
 	/************************************************************************************/
 
 	//Bounding Boxes - By default are enabled
 	/************************************************************************************/
-	if (showBoundingBox) {
+	/*if (showBoundingBox) {
 		//draw the bounding box around the box
 		glPushMatrix();
 		glDisable(GL_LIGHTING);
