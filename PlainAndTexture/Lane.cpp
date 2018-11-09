@@ -6,7 +6,7 @@ Lane::Lane() {
 	//perlinMesh = createPerlinPlain(10000, 10000, 20);
 	calculateNormalPerFace();
 	calculateNormalPerVertex();
-	bmpTexture(this->texture, "bmp/brick.bmp");
+	bmpTexture(this->texture, "bmp/moon.bmp");
 	//codedTexture();
 	meshToDisplayList();
 }

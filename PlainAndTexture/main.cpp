@@ -214,7 +214,7 @@ void init() {
 	GLfloat fogColor[4] = { 0.5, 0.5, 0.5, 1.0 };
 	glFogfv(GL_FOG_COLOR, fogColor);
 	glFogf(GL_FOG_DENSITY, 0.25);
-	glFogf(GL_FOG_START, 10.0);
+	glFogf(GL_FOG_START, 3000.0);
 	glFogf(GL_FOG_END, 6000.0);
 
 }
@@ -427,6 +427,73 @@ void display(void) {
 	glPushMatrix();
 	glTranslatef(-5000, -800, -5000);
 	glCallList(lane->getDisplayList());
+	glPopMatrix();
+	/*********************************************************************/
+
+	//Display Hill(NURBS)
+	/*********************************************************************/
+	// NURBS
+	// V_size curves with U_size control points each
+	// V_size + ORDER knots per curve and U_size + ORDER knots per inter-curve conection (controlpnt + 4)
+	// V_size*3 and 3 offsets
+	// cubic equations (4)
+
+	const int V_size = 4;
+	const int U_size = 4;
+	const int ORDER = 4;
+	GLfloat ctlpoints[U_size][V_size][3] = {
+		{ { 70, -80, -20 } ,{ 70, -80, -10 },{ 70, -80, 10 },{ 70, -80, 20 } },
+		{ { 90, -80, -20 } ,{ 90, -60, 0 },{ 90, -60, 0 },{ 90, -80, 20 } },
+		{ { 90, -80, -20 } ,{ 90, -60, 0 },{ 90, -60, 0 },{ 90, -80, 20 } },
+		{ { 110, -80, -20 } ,{ 110, -80, -10 },{ 110, -80, 10 },{ 110, -80, 20 } }
+	};
+	GLfloat vknots[V_size + ORDER] = { 0.0, 0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 3.0 };
+	GLfloat uknots[U_size + ORDER] = { 0.0, 0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 3.0 };
+
+	GLUnurbsObj *theNurb;
+	theNurb = gluNewNurbsRenderer();
+	gluNurbsProperty(theNurb, GLU_SAMPLING_TOLERANCE, 25.0);
+	gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_FILL);
+
+	glPushMatrix();
+	glScalef(10, 10, 10);
+	gluBeginSurface(theNurb);
+	gluNurbsSurface(theNurb,
+		U_size + ORDER, uknots,
+		V_size + ORDER, vknots,
+		V_size * 3,
+		3,
+		&ctlpoints[0][0][0],
+		ORDER, ORDER,
+		GL_MAP2_VERTEX_3);
+	gluEndSurface(theNurb);
+
+	// control graph
+	/*
+	glDisable(GL_LIGHTING);
+	glPointSize(1.0);
+	glColor3f(0, 0, 1);
+	for (int i = 0; i < U_size; i++) {
+		glBegin(GL_LINE_STRIP);
+		for (int j = 0; j < V_size; j++) {
+			glVertex3f(ctlpoints[i][j][0], ctlpoints[i][j][1], ctlpoints[i][j][2]);
+		}
+		glEnd();
+	}
+	*/
+	// show control points
+	/*
+	glPointSize(5.0);
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_POINTS);
+	for (int i = 0; i < U_size; i++) {
+		for (int j = 0; j < V_size; j++) {
+			glVertex3f(ctlpoints[i][j][0], ctlpoints[i][j][1], ctlpoints[i][j][2]);
+		}
+	}
+	glEnd();
+	*/
+	glEnable(GL_LIGHTING);
 	glPopMatrix();
 	/*********************************************************************/
 

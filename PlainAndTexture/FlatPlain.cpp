@@ -3,7 +3,7 @@
 FlatPlain::FlatPlain(int w, int d) {
 	this->width = w;
 	this->depth = d;
-	loadBMP_custom(this->texture, "bmp/brick.bmp");
+	loadBMP_custom(this->texture, "bmp/moon.bmp");
 	//bmpTexture(this->texture, "bmp/brick.bmp");
 	mesh = createFlatPlane(100);
 	calculateNormalPerFace();
