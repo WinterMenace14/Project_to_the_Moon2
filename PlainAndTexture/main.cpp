@@ -26,6 +26,15 @@ int width = 1200;
 int height = 600;
 float ratio = 1.0;
 
+int N = 20;
+float verticies[20][3];
+float Geometry[4][3] = {
+	{ 5000, 200, 2500 },  //  Point 1
+	{ -5000,  200, -1500 },	  //	Point2
+	{ 5000,  200, 2000 },	  //	Tangent1
+	{ -5000,   200, -1400 }		//	Tangent2
+};
+
 //create variables to hold objects
 Lane *lane;
 
@@ -496,7 +505,46 @@ void display(void) {
 	glEnable(GL_LIGHTING);
 	glPopMatrix();
 	/*********************************************************************/
+	//Shooting Star(Hermite)
+	/*********************************************************************/
+	glBegin(GL_LINE_STRIP);
+	// use the parametric time value 0 to 1
+	for (int i = 0; i != N; ++i) {
+		float t = (float)i / (N - 1);
+		// calculate blending functions
+		float b0 = 2 * t*t*t - 3 * t*t + 1;
+		float b1 = -2 * t*t*t + 3 * t*t;
+		float b2 = t*t*t - 2 * t*t + t;
+		float b3 = t*t*t - t * t;
+		// calculate the x, y and z of the curve point
+		float x = b0 * Geometry[0][0] + b1 * Geometry[1][0] + b2 * Geometry[2][0] + b3 * Geometry[3][0];
+		float y = b0 * Geometry[0][1] + b1 * Geometry[1][1] + b2 * Geometry[2][1] + b3 * Geometry[3][1];
+		float z = b0 * Geometry[0][2] + b1 * Geometry[1][2] + b2 * Geometry[2][2] + b3 * Geometry[3][2];
+		verticies[i][0] = x;
+		verticies[i][1] = y;
+		verticies[i][2] = z;
+		// specify the point
+		glVertex3f(x, y, z);
+	}
+	glEnd();
 
+	int point = 0;
+	glPointSize(20.0);
+	glColor3f(1, 1, 0);
+	glPushMatrix();
+	glBegin(GL_POINTS);
+	if (point >= 1) {
+			glTranslatef(verticies[point][0]-verticies[point - 1][0], verticies[point][1] - verticies[point - 1][1], verticies[point][2] - verticies[point - 1][2]);
+			point++;
+	}
+	if (point == 19) {
+		point = 0;
+	}
+	glVertex3f(verticies[0][0], verticies[0][1], verticies[0][2]);
+	glEnd();
+	glPopMatrix();
+
+	/*********************************************************************/
 	//enable blend and disable light
 	/*glEnable(GL_BLEND);
 	glDisable(GL_LIGHTING);
