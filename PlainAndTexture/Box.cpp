@@ -177,10 +177,10 @@ void Box::boxToDisplayList() {
 	int index = 0;
 	//if (id != 3) {
 	for (int x = 0; x < 6; x++) {
-		glEnable(GL_TEXTURE_2D);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		//glEnable(GL_TEXTURE_2D);
+		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-		glBindTexture(GL_TEXTURE_2D, texture);
+		//glBindTexture(GL_TEXTURE_2D, texture);
 		//}
 		glBegin(GL_TRIANGLES);
 		for (int i = 0; i < 6; i++) {
@@ -189,13 +189,14 @@ void Box::boxToDisplayList() {
 				glNormal3fv(&this->mesh->dot_normalPerVertex[this->mesh->face_index_normalPerVertex[index + i]].x);
 			}
 			// TEXTURES
-			if (!this->mesh->dot_texture.empty() && !this->mesh->face_index_texture.empty()) {
-				glTexCoord2fv(&this->mesh->dot_texture[this->mesh->face_index_texture[index + i]].x);
-			}
+			//if (!this->mesh->dot_texture.empty() && !this->mesh->face_index_texture.empty()) {
+				//glTexCoord2fv(&this->mesh->dot_texture[this->mesh->face_index_texture[index + i]].x);
+			//}
 			// COLOR
-			Vec3f offset = (this->mesh->dot_vertex[this->mesh->face_index_vertex[index + i]]);
+			//Vec3f offset = (this->mesh->dot_vertex[this->mesh->face_index_vertex[index + i]]);
 			// VERTEX
-			glColor3f(fabs(sin(offset.x)), fabs(cos(offset.y)), fabs(offset.z));
+			//glColor3f(fabs(sin(offset.x)), fabs(cos(offset.y)), fabs(offset.z));
+			glColor3f(1.0f, 1.0f, 1.0f);
 			glVertex3fv(&this->mesh->dot_vertex[this->mesh->face_index_vertex[index + i]].x);
 		}
 		glEnd();
@@ -203,7 +204,7 @@ void Box::boxToDisplayList() {
 		index = index + 6;
 		//}
 	}
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 
 	glEndList();
 }

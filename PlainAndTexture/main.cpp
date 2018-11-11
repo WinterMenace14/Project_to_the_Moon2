@@ -21,6 +21,8 @@ Date	: 8/30/2018
 #include "FlatPlain.h"
 #include "Box.h"
 #include "Player.h"
+#include "particles.h"
+#include "timer.h"
 
 int width = 1200;
 int height = 600;
@@ -50,7 +52,7 @@ FlatPlain *flatPlain; //for lava
 //FlatPlain *mirror;
 
 //normal box
-//Box *box;
+Box *box;
 
 //astro model
 Player *p1;
@@ -83,6 +85,9 @@ bool showBoundingBox = true;
 bool showFog = true;
 bool showSkyBox = true;
 //bool showFlatPlain = true;
+
+//variable for timer
+//float time = 0;
 
 //create a menu listener and pass in menu option
 void menuListener(int option) {
@@ -180,6 +185,9 @@ void init() {
 	glEnable(GL_DEPTH_TEST);
 	ratio = (double)width / (double)height;
 
+	//initiate frame timer
+	init_frame_timer();
+
 	//create Lane object
 	lane = new Lane();
 	
@@ -193,7 +201,7 @@ void init() {
 	flatPlain = new FlatPlain(1000, 1000);
 
 	//create box for quiz 3
-	//box = new Box(100, 100, 100);
+	box = new Box(100, 100, 100);
 
 	p1 = new Player();
 
@@ -342,6 +350,30 @@ void renderBitmapString(float x, float y, float z, const char *string) {
 	glRasterPos3f(x, y, z);   // fonts position
 	for (c = string; *c != '\0'; c++)
 		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *c);
+}
+
+//draw particles
+// draw particles
+void drawParticles() {
+	Particle* curr = ps.particle_head;
+	// glPointSize(2);
+	// glBegin(GL_POINTS);
+	// while (curr) {
+	//   glVertex3fv(curr->position);
+	//	 curr = curr->next;
+	// }
+	// glEnd();
+	while (curr) {
+		glPushMatrix();
+		//glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+		glScalef(100.0, 100.0, 100.0);
+		glTranslatef(curr->position[0], curr->position[1], curr->position[2]);
+		glScalef(0.001, 0.001, 0.001);
+		glCallList(box->getDisplayList());
+		glPopMatrix();
+		curr = curr->next;
+	}
+
 }
 
 // display
@@ -542,6 +574,21 @@ void display(void) {
 	}
 	glVertex3f(verticies[0][0], verticies[0][1], verticies[0][2]);
 	glEnd();
+	glPopMatrix();
+
+	/*********************************************************************/
+	//Particle system attatched to the star
+	/*********************************************************************/
+
+	//createing particle system
+	ps.add();
+	float time = calculate_frame_time();
+	ps.update(time);
+	ps.remove();
+	
+	//drawing particle system
+	glPushMatrix();
+	drawParticles();
 	glPopMatrix();
 
 	/*********************************************************************/
