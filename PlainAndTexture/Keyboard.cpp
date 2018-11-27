@@ -15,7 +15,7 @@ void Keyboard::readKeyboard(unsigned char key, int x, int y, bool press) {
 	keys[key] = press;
 }
 
-//return the keys arrya
+//return the keys array
 unsigned char* Keyboard::getKeys() {
 	return this->keys;
 }

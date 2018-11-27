@@ -4,11 +4,10 @@
 #include "Globals.h"
 #include "Box.h"
 #include "Lane.h"
-#include "noise.h"
 #include "FlatPlain.h"
-#include "particles.h"
+#include "NewParticle.h"
+#include "ParticleSystem.h"
 #include "Player.h"
-#include "timer.h"
 #include "Skybox.h"
 #include "Keyboard.h"
 
@@ -17,6 +16,7 @@
 #define P1_LEFT	'a'
 #define P1_RIGHT 'd'
 #define P1_BACK	's'
+#define P1_BOOST ' '
 
 //set the framreate 
 #define FRAMERATE 60
@@ -24,6 +24,7 @@
 class ToTheMoon {
 
 public:
+
 	//contrsuctor and destructor
 	ToTheMoon();
 	~ToTheMoon();
@@ -33,8 +34,8 @@ public:
 	void gameLoop();	//game loop
 	void logic();		//read input and update objects
 	void render();		//display objects to the screen
-	void menuListener(int option);	//selects the features to display
-	void createMenus();	//creates the right click drop-down menu
+	//void menuListener(int option);	//selects the features to display
+	//void createMenus();	//creates the right click drop-down menu
 	void rotate_point(float angle); //rotate the scene
 	void reshape(int w, int h);	//reshape the window
 	void mouse(int button, int state, int x, int y);	//mouse input method
@@ -44,7 +45,6 @@ public:
 
 	//hold game objects
 private:
-
 	//for the window sizing
 	int width = 1200;
 	int height = 600;
@@ -78,6 +78,7 @@ private:
 	FlatPlain *flatPlain;
 	Box *box;
 	Player *p1;
+	ParticleSystem* ps;
 
 	//variables for camera and player position
 	float box_pos_x = 0;

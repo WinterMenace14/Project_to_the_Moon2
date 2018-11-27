@@ -1,5 +1,5 @@
 #pragma once
-#include "Globals.h"
+//#include "Globals.h"
 
 // a structure to hold a particle
 class Particle {

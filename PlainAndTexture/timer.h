@@ -12,7 +12,7 @@ float	startOfFrame, endOfFrame, frequency;
 LONGLONG start_clock;
 
 //	Initialise timer
-void  init_frame_timer() {
+inline void  init_frame_timer() {
 	LONGLONG rate;
 	frequency = 1.0f / (float)CLOCKS_PER_SEC;
 	if (!QueryPerformanceFrequency((LARGE_INTEGER*)&rate)) return;
@@ -22,14 +22,14 @@ void  init_frame_timer() {
 }
 
 // Get the current time
-float get_current_time() {
+inline float get_current_time() {
 	LONGLONG end_clock;
 	QueryPerformanceCounter((LARGE_INTEGER*)&end_clock);
 	return  (end_clock - start_clock) * frequency;
 }
 
 //	calculate frame time
-float calculate_frame_time() {
+inline float calculate_frame_time() {
 	++dx;
 	dx %= 0x05;
 	do {

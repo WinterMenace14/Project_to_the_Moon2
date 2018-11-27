@@ -1,4 +1,5 @@
 #include "ToTheMoon.h"
+#include "timer.h"
 
 ToTheMoon::ToTheMoon() {
 	//basic constructor
@@ -12,7 +13,7 @@ ToTheMoon::~ToTheMoon() {
 void ToTheMoon::init() {
 
 	//setup graphics enviornment and objects within the world
-	this->createMenus();
+	//this->createMenus();
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 	this->ratio = (double)width / (double)height;
@@ -26,6 +27,8 @@ void ToTheMoon::init() {
 	this->flatPlain = new FlatPlain(1000, 1000);
 	this->box = new Box(100, 100, 100);
 	this->p1 = new Player();
+	this->ps = new ParticleSystem();
+	this->keyboard = new Keyboard();
 
 	//light
 	GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 }; //0.6, 0.6, 0.6, 0.5
@@ -56,6 +59,8 @@ void ToTheMoon::render() {
 
 	//draw graphics to the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	glEnable(GL_CULL_FACE);
 
 	// projection
 	glMatrixMode(GL_PROJECTION);
@@ -258,10 +263,10 @@ void ToTheMoon::render() {
 	/*********************************************************************/
 
 	//createing particle system
-	ps.add();
+	ps->add();
 	float time = calculate_frame_time();
-	ps.update(time);
-	ps.remove();
+	ps->update(time);
+	ps->remove();
 
 	//drawing particle system
 	glPushMatrix();
@@ -345,21 +350,55 @@ void ToTheMoon::render() {
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+
+	glDisable(GL_CULL_FACE);
 	glutSwapBuffers();
 }
 
 //function to handle the game logic
 void ToTheMoon::logic() {
 
+	//handle input from the user
+	if (this->keyboard->getKeys()[P1_FORWARD]) {
+		this->camera_look_z += -10;
+		this->camera_pos_z += -10;
+		this->box_pos_z += -33.333333;
+	}
+
+	if (this->keyboard->getKeys()[P1_LEFT]) {
+		this->camera_look_x += -10;
+		this->camera_pos_x += -10;
+		this->box_pos_x += -33.333333;
+	}
+
+	if (this->keyboard->getKeys()[P1_RIGHT]) {
+		this->camera_look_x += 10;
+		this->camera_pos_x += 10;
+		this->box_pos_x += 33.333333;
+	}
+
+	if (this->keyboard->getKeys()[P1_BACK]) {
+		this->camera_look_z += 10;
+		this->camera_pos_z += 10;
+		this->box_pos_z += 33.333333;
+	}
 }
 
 //Game loop to handle the logic and render
 void ToTheMoon::gameLoop() {
+	this->logic();
+	this->render();
+}
 
+//read in mouse input
+void ToTheMoon::mouse(int button, int state, int x, int y) {
+	this->mouse_x = x;
+	this->mouse_y = y;
+	this->mouse_button = button;
 }
 
 //create a menu listener and pass in menu option
-void ToTheMoon::menuListener(int option) {
+/*void ToTheMoon::menuListener(int option) {
 	//check passed in option
 	switch (option) {
 	case 1:
@@ -389,14 +428,14 @@ void ToTheMoon::menuListener(int option) {
 			}
 			else
 				showFlatPlain = true;
-			break;*/
+			break;
 	}
 	glutPostRedisplay();
-}
+}*/
 
 //menu function to create menus to swap between showing
 //features
-void ToTheMoon::createMenus() {
+/*void ToTheMoon::createMenus() {
 
 	//create fog menu
 	int fogMenu = glutCreateMenu(this->menuListener);
@@ -412,7 +451,7 @@ void ToTheMoon::createMenus() {
 
 	//create flat plain menu
 	/*int flatPlainMenu = glutCreateMenu(menuListener);
-	glutAddMenuEntry("Enable/Disable", 4);*/
+	glutAddMenuEntry("Enable/Disable", 4);
 
 	//create main menu
 	int mainMenu = glutCreateMenu(this->menuListener);
@@ -423,7 +462,7 @@ void ToTheMoon::createMenus() {
 
 	//attatch menu to right mouse button
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
-}
+}*/
 
 //rotate the camera
 void ToTheMoon::rotate_point(float angle) {
@@ -463,7 +502,7 @@ void ToTheMoon::renderBitmapString(float x, float y, float z, const char *string
 
 // draw particles
 void ToTheMoon::drawParticles() {
-	Particle* curr = ps.particle_head;
+	Particle* curr = ps->particle_head;
 	// glPointSize(2);
 	// glBegin(GL_POINTS);
 	// while (curr) {
