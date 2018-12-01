@@ -25,6 +25,12 @@ class ToTheMoon {
 
 public:
 
+	//create variables to control what features are displayed (default all are true)
+	bool showBoundingBox = true;
+	bool showFog = true;
+	bool showSkyBox = true;
+	bool editorMode = false;
+
 	//contrsuctor and destructor
 	ToTheMoon();
 	~ToTheMoon();
@@ -34,13 +40,14 @@ public:
 	void gameLoop();	//game loop
 	void logic();		//read input and update objects
 	void render();		//display objects to the screen
-	//void menuListener(int option);	//selects the features to display
-	//void createMenus();	//creates the right click drop-down menu
 	void rotate_point(float angle); //rotate the scene
 	void reshape(int w, int h);	//reshape the window
 	void mouse(int button, int state, int x, int y);	//mouse input method
+	void motion(int x, int y);	//motion with the mouse
 	void renderBitmapString(float x, float y, float Z, const char *string);	//method to print text
 	void drawParticles();	//draw particles
+	void setEditorCamera();	//store the Player camera values
+	void loadPlayerCamera();	//place the stored player camera values into the camera
 	Keyboard* getKeyboard();	//get the keyboard input
 
 	//hold game objects
@@ -49,6 +56,9 @@ private:
 	int width = 1200;
 	int height = 600;
 	float ratio = 1.0;
+
+	//game is running
+	bool running = true;
 
 	//mouse input
 	int mouse_button;
@@ -93,8 +103,12 @@ private:
 	float camera_look_y = box_pos_y + 640; //orig -200
 	float camera_look_z = box_pos_z - 50; //orig -1
 
-	//create variables to control what features are displayed (default all are true)
-	bool showBoundingBox = true;
-	bool showFog = true;
-	bool showSkyBox = true;
+	float oldPosX = 0;
+	float oldPosY = 0;
+	float oldPosZ = 0;
+
+	float oldLookX = 0;
+	float oldLookY = 0;
+	float oldLookZ = 0;
+
 };

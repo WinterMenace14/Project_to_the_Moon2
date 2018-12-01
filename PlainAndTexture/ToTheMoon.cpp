@@ -74,7 +74,7 @@ void ToTheMoon::render() {
 	glPushMatrix();
 	glLoadIdentity();
 
-	// lookAt
+	// lookAt Game Mode
 	gluLookAt(this->camera_pos_x, this->camera_pos_y, this->camera_pos_z,
 		this->camera_look_x, this->camera_look_y, this->camera_look_z,
 		0.0f, 1.0f, 0.0f);
@@ -160,7 +160,7 @@ void ToTheMoon::render() {
 	// V_size + ORDER knots per curve and U_size + ORDER knots per inter-curve conection (controlpnt + 4)
 	// V_size*3 and 3 offsets
 	// cubic equations (4)
-
+	/*
 	const int V_size = 4;
 	const int U_size = 4;
 	const int ORDER = 4;
@@ -215,9 +215,10 @@ void ToTheMoon::render() {
 		}
 	}
 	glEnd();
-	*/
+	
 	glEnable(GL_LIGHTING);
 	glPopMatrix();
+	*/
 	/*********************************************************************/
 	//Shooting Star(Hermite)
 	/*********************************************************************/
@@ -384,10 +385,59 @@ void ToTheMoon::logic() {
 	}
 }
 
+//store the player mode camera
+void ToTheMoon::setEditorCamera() {
+
+	//store old camera pos
+	this->oldPosX = this->camera_pos_x;
+	this->oldPosY = this->camera_pos_y;
+	this->oldPosZ = this->camera_pos_z;
+	this->oldLookX = this->camera_look_x;
+	this->oldLookY = this->camera_look_y;
+	this->oldLookZ = this->camera_look_z;
+
+	//set editor camera pos & look
+	this->camera_pos_x = 500;
+	this->camera_pos_y = -100;
+	this->camera_pos_z = 300;
+
+	this->camera_look_x = 0;
+	this->camera_look_y = -160;
+	this->camera_look_z = 0;
+}
+
+//restore the player camera
+void ToTheMoon::loadPlayerCamera() {
+
+	this->scale = .3f;
+	this->x_angle = 0;
+	this->y_angle = 0;
+
+	this->camera_pos_x = this->oldPosX;
+	this->camera_pos_y = this->oldPosY;
+	this->camera_pos_z = this->oldPosZ;
+	this->camera_look_x = this->oldLookX;
+	this->camera_look_y = this->oldLookY;
+	this->camera_look_z = this->oldLookZ;
+
+}
+
 //Game loop to handle the logic and render
 void ToTheMoon::gameLoop() {
-	this->logic();
-	this->render();
+
+	//check to see that the game is running and set frame rate
+	int t1, t2;
+
+	t1 = glutGet(GLUT_ELAPSED_TIME);
+
+	if (this->running) {
+		this->logic();
+		this->render();
+	}
+
+	do {
+		t2 = glutGet(GLUT_ELAPSED_TIME);
+	} while (t2 - t1 < 1000 / FRAMERATE);
 }
 
 //read in mouse input
@@ -397,72 +447,21 @@ void ToTheMoon::mouse(int button, int state, int x, int y) {
 	this->mouse_button = button;
 }
 
-//create a menu listener and pass in menu option
-/*void ToTheMoon::menuListener(int option) {
-	//check passed in option
-	switch (option) {
-	case 1:
-		if (this->showFog) {
-			this->showFog = false;
-		}
-		else
-			this->showFog = true;
-		break;
-	case 2:
-		if (this->showBoundingBox) {
-			this->showBoundingBox = false;
-		}
-		else
-			this->showBoundingBox = true;
-		break;
-	case 3:
-		if (this->showSkyBox) {
-			this->showSkyBox = false;
-		}
-		else
-			this->showSkyBox = true;
-		break;
-		/*case 4:
-			if (showFlatPlain) {
-				showFlatPlain = false;
-			}
-			else
-				showFlatPlain = true;
-			break;
+//motion around scene
+void ToTheMoon::motion(int x, int y) {
+	if (mouse_button == GLUT_LEFT_BUTTON) {
+		y_angle += (float(x - mouse_x) / width) *360.0;
+		x_angle += (float(y - mouse_y) / height)*360.0;
 	}
+	if (mouse_button == GLUT_RIGHT_BUTTON) {
+		scale += (y - mouse_y) / 100.0;
+		if (scale < 0.1) scale = 0.1;
+		if (scale > 7)	scale = 7;
+	}
+	mouse_x = x;
+	mouse_y = y;
 	glutPostRedisplay();
-}*/
-
-//menu function to create menus to swap between showing
-//features
-/*void ToTheMoon::createMenus() {
-
-	//create fog menu
-	int fogMenu = glutCreateMenu(this->menuListener);
-	glutAddMenuEntry("Enable/Disable", 1);
-
-	//create bounding box menu
-	int boundBoxMenu = glutCreateMenu(this->menuListener);
-	glutAddMenuEntry("Enable/Disable", 2);
-
-	//create skybox menu
-	int skyBoxMenu = glutCreateMenu(this->menuListener);
-	glutAddMenuEntry("Enable/Disable", 3);
-
-	//create flat plain menu
-	/*int flatPlainMenu = glutCreateMenu(menuListener);
-	glutAddMenuEntry("Enable/Disable", 4);
-
-	//create main menu
-	int mainMenu = glutCreateMenu(this->menuListener);
-	glutAddSubMenu("Fog", fogMenu);
-	glutAddSubMenu("AABB", boundBoxMenu);
-	glutAddSubMenu("Skybox", skyBoxMenu);
-	//glutAddSubMenu("Flat Plane", flatPlainMenu);
-
-	//attatch menu to right mouse button
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
-}*/
+}
 
 //rotate the camera
 void ToTheMoon::rotate_point(float angle) {
