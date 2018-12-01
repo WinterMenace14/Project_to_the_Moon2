@@ -1,5 +1,164 @@
 #include "ToTheMoon.h"
 #include "timer.h"
+#include <vector>
+#include "Imath/imathvec.h"
+#include "GL/glut.h"
+#include <string>
+#include <fstream>
+#include <math.h>
+#include <limits.h>           
+#include <float.h>          
+#include <time.h>
+
+
+#define random_number() (((float) rand())/((float) RAND_MAX))
+#define MAXLEVEL 8
+int Level = 4;
+long TreeSeed;
+int TREE = 0, STEM = 1, TREE_MAT = 4, FULLTREE = 10;
+
+const int V_size = 4;
+const int U_size = 4;
+const int ORDER = 4;
+// Knot sequences for cubic bezier surface and trims 
+GLfloat sknots[V_size + ORDER] = { 0, 0, 0, 0, 3, 3, 3, 3 };
+GLfloat tknots[U_size + ORDER] = { 0, 0, 0, 0, 3, 3, 3, 3 };
+
+// Control points for the flag. The Z values are modified to make it wave
+GLfloat ctlpoints[V_size][U_size][3] = {
+	{ { 0, 300, 0 },{ 100, 300, 0 },{ 200, 300, 0 },{ 300, 300, 0 } },
+	{ { 0, 200, 0 },{ 100, 200, 0 },{ 200, 200, 0 },{ 300, 200, 0 } },
+	{ { 0, 100, 0 },{ 100, 100, 0 },{ 200, 100, 0 },{ 300, 100, 0 } },
+	{ { 0, 0, 0 },{ 100, 0, 0 },{ 200, 0, 0 },{ 300, 0, 0 } }
+};
+
+GLUnurbsObj *nurbsflag;
+
+
+// draw_nurb
+void draw_nurb() {
+	static GLfloat angle = 0.0;
+	int i, j;
+	// wave the flag by rotating Z coords though a sine wave
+	for (i = 1; i<4; i++)
+		for (j = 0; j<4; j++)
+			ctlpoints[i][j][2] = sin((GLfloat)i + angle);
+	angle += 0.1;
+	glPushMatrix();
+	glScalef(1.5, 1.0, 1.0);
+	glRotatef(90, 0, 0, 1);
+	gluBeginSurface(nurbsflag);
+	gluNurbsSurface(nurbsflag, (V_size + ORDER), sknots, (U_size + ORDER), tknots,
+		3 * U_size, 3,
+		&ctlpoints[0][0][0], 4, 4, GL_MAP2_VERTEX_3);
+	gluEndSurface(nurbsflag);
+	glPopMatrix();
+}
+
+// timer
+void timer(int t) {
+	draw_nurb();
+	glutPostRedisplay();
+	glutTimerFunc(1000.0 / 30.0, timer, 0);
+}
+
+// create a tree as fractal
+void FractalTree(int level) {
+	long savedseed;
+	if (level == Level) {
+		glPushMatrix();
+		glRotatef(random_number() * 180, 0, 1, 0);
+		glCallList(STEM);
+		glPopMatrix();
+	}
+	else {
+		glCallList(STEM);
+		glPushMatrix();
+		glRotatef(random_number() * 180, 0, 1, 0);
+		glTranslatef(0, 1, 0);
+		glScalef(0.7, 0.7, 0.7);
+		glPushMatrix();
+		glRotatef(110 + random_number() * 40, 0, 1, 0);
+		glRotatef(30 + random_number() * 20, 0, 0, 1);
+		FractalTree(level + 1);
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotatef(-130 + random_number() * 40, 0, 1, 0);
+		glRotatef(30 + random_number() * 20, 0, 0, 1);
+		FractalTree(level + 1);
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotatef(-20 + random_number() * 40, 0, 1, 0);
+		glRotatef(30 + random_number() * 20, 0, 0, 1);
+		FractalTree(level + 1);
+		glPopMatrix();
+		glPopMatrix();
+	}
+}
+
+// Create display lists for a leaf, a set of leaves, and a stem
+void CreateTreeLists(void) {
+	// materials
+	GLfloat tree_ambuse[] = { 0.4, 0.25, 0.1, 1.0 };
+	GLfloat tree_specular[] = { 0.0, 0.0, 0.0, 1.0 };
+	GLfloat tree_shininess[] = { 0 };
+	// tree material
+	glNewList(TREE_MAT, GL_COMPILE);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, tree_ambuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, tree_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, tree_shininess);
+	glEndList();
+	// steam
+	glNewList(STEM, GL_COMPILE);
+	glPushMatrix();
+	glRotatef(-90, 1, 0, 0);
+	glBegin(GL_QUADS);
+	//Top Face z = 1
+	glVertex3f(0.08f, -0.08f, 1.0f);
+	glVertex3f(-0.08f, -0.08f, 1.0f);
+	glVertex3f(-0.08f, 0.08f, 1.0f);
+	glVertex3f(0.08f, 0.08f, 1.0f);
+	//Bottom Face z = 0
+	glVertex3f(0.1f, 0.1f, 0.0f);
+	glVertex3f(-0.1f, 0.1f, 0.0f);
+	glVertex3f(-0.1f, -0.1f, 0.0f);
+	glVertex3f(0.1f, -0.1f, 0.0f);
+	//Front Face y = 0.08 - 0.1
+	glVertex3f(0.08f, 0.08f, 1.0f);
+	glVertex3f(-0.08f, 0.08f, 1.0f);
+	glVertex3f(-0.1f, 0.1f, 0.0f);
+	glVertex3f(0.1f, 0.1f, 0.0f);
+	//Back Face y = -0.1 - -0.08
+	glVertex3f(0.1f, -0.1f, 0.0f);
+	glVertex3f(-0.1f, -0.1f, 0.0f);
+	glVertex3f(-0.08f, -0.08f, 1.0f);
+	glVertex3f(0.08f, -0.08f, 1.0f);
+	//Left Face x = -0.1 - -0.08
+	glVertex3f(-0.08f, 0.08f, 1.0f);
+	glVertex3f(-0.08f, -0.08f, 1.0f);
+	glVertex3f(-0.1f, -0.1f, 0.0f);
+	glVertex3f(-0.1f, 0.1f, 0.0f);
+	//Right Face x = 0.08 - 0.1
+	glVertex3f(0.08f, -0.08f, 1.0f);
+	glVertex3f(0.08f, 0.08f, 1.0f);
+	glVertex3f(0.1f, 0.1f, 0.0f);
+	glVertex3f(0.1f, -0.1f, 0.0f);
+	glEnd();
+	glPopMatrix();
+	glEndList();
+	//
+	glNewList(FULLTREE, GL_COMPILE);
+	glPushMatrix();
+	glPushAttrib(GL_LIGHTING_BIT);
+	glCallList(TREE_MAT);
+	glTranslatef(0, -1, 0);
+	FractalTree(0);
+	glPopAttrib();
+	glPopMatrix();
+	glEndList();
+}
 
 ToTheMoon::ToTheMoon() {
 	//basic constructor
@@ -14,6 +173,7 @@ void ToTheMoon::init() {
 
 	//setup graphics enviornment and objects within the world
 	//this->createMenus();
+	CreateTreeLists();
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 	this->ratio = (double)width / (double)height;
@@ -29,12 +189,16 @@ void ToTheMoon::init() {
 	this->p1 = new Player();
 	this->ps = new ParticleSystem();
 	this->keyboard = new Keyboard();
+	float base_camera_look = this->camera_look_y;
+	float base_camera_pos = this->camera_pos_y;
+	float base_box_pos = this->box_pos_y;
+
 
 	//light
 	GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 }; //0.6, 0.6, 0.6, 0.5
 	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 }; //0.3, 0.3, 0.3, 0.3
 	GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 }; //0.5, 0.5, 0.5, 0.3
-	GLfloat light_position[] = { 0.0, 0.0, 1.0, 0.0 }; //0.0, 0.0, 3500.0, 0.0
+	GLfloat light_position[] = { 0.0, 400.0, 1.0, 0.0 }; //0.0, 0.0, 3500.0, 0.0
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
@@ -53,6 +217,10 @@ void ToTheMoon::init() {
 	glFogf(GL_FOG_DENSITY, 0.25);
 	glFogf(GL_FOG_START, 3000.0);
 	glFogf(GL_FOG_END, 6000.0);
+
+	nurbsflag = gluNewNurbsRenderer();
+	gluNurbsProperty(nurbsflag, GLU_SAMPLING_TOLERANCE, 100.0);
+	gluNurbsProperty(nurbsflag, GLU_DISPLAY_MODE, GLU_FILL); //GLU_OUTLINE_POLYGON
 }
 
 void ToTheMoon::render() {
@@ -66,6 +234,7 @@ void ToTheMoon::render() {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
+
 	glViewport(0, 0, this->width, this->height);
 	gluPerspective(45, this->ratio, 1, 10000);
 
@@ -119,6 +288,13 @@ void ToTheMoon::render() {
 	//glCallList(lane->getDisplayList());
 	//glPopMatrix();
 
+	// tree fractal
+	glPushMatrix();
+	glTranslatef(300, -700, 300);
+	glScalef(100, 100, 100);
+	glCallList(FULLTREE);
+	glPopMatrix();
+
 	// Displaying Fog
 	/*********************************************************************/
 	if (this->showFog == false) {
@@ -153,72 +329,6 @@ void ToTheMoon::render() {
 	glPopMatrix();
 	/*********************************************************************/
 
-	//Display Hill(NURBS)
-	/*********************************************************************/
-	// NURBS
-	// V_size curves with U_size control points each
-	// V_size + ORDER knots per curve and U_size + ORDER knots per inter-curve conection (controlpnt + 4)
-	// V_size*3 and 3 offsets
-	// cubic equations (4)
-
-	const int V_size = 4;
-	const int U_size = 4;
-	const int ORDER = 4;
-	GLfloat ctlpoints[U_size][V_size][3] = {
-		{ { 70, -80, -20 } ,{ 70, -80, -10 },{ 70, -80, 10 },{ 70, -80, 20 } },
-		{ { 90, -80, -20 } ,{ 90, -60, 0 },{ 90, -60, 0 },{ 90, -80, 20 } },
-		{ { 90, -80, -20 } ,{ 90, -60, 0 },{ 90, -60, 0 },{ 90, -80, 20 } },
-		{ { 110, -80, -20 } ,{ 110, -80, -10 },{ 110, -80, 10 },{ 110, -80, 20 } }
-	};
-	GLfloat vknots[V_size + ORDER] = { 0.0, 0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 3.0 };
-	GLfloat uknots[U_size + ORDER] = { 0.0, 0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 3.0 };
-
-	GLUnurbsObj *theNurb;
-	theNurb = gluNewNurbsRenderer();
-	gluNurbsProperty(theNurb, GLU_SAMPLING_TOLERANCE, 25.0);
-	gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_FILL);
-
-	glPushMatrix();
-	glScalef(10, 10, 10);
-	gluBeginSurface(theNurb);
-	gluNurbsSurface(theNurb,
-		U_size + ORDER, uknots,
-		V_size + ORDER, vknots,
-		V_size * 3,
-		3,
-		&ctlpoints[0][0][0],
-		ORDER, ORDER,
-		GL_MAP2_VERTEX_3);
-	gluEndSurface(theNurb);
-
-	// control graph
-	/*
-	glDisable(GL_LIGHTING);
-	glPointSize(1.0);
-	glColor3f(0, 0, 1);
-	for (int i = 0; i < U_size; i++) {
-		glBegin(GL_LINE_STRIP);
-		for (int j = 0; j < V_size; j++) {
-			glVertex3f(ctlpoints[i][j][0], ctlpoints[i][j][1], ctlpoints[i][j][2]);
-		}
-		glEnd();
-	}
-	*/
-	// show control points
-	/*
-	glPointSize(5.0);
-	glColor3f(1.0, 0.0, 0.0);
-	glBegin(GL_POINTS);
-	for (int i = 0; i < U_size; i++) {
-		for (int j = 0; j < V_size; j++) {
-			glVertex3f(ctlpoints[i][j][0], ctlpoints[i][j][1], ctlpoints[i][j][2]);
-		}
-	}
-	glEnd();
-	*/
-	glEnable(GL_LIGHTING);
-	glPopMatrix();
-	/*********************************************************************/
 	//Shooting Star(Hermite)
 	/*********************************************************************/
 	glBegin(GL_LINE_STRIP);
@@ -309,25 +419,37 @@ void ToTheMoon::render() {
 	glPushMatrix();
 	glTranslatef(this->box_pos_x, this->box_pos_y, this->box_pos_z);
 	glRotatef(90, 0.0, 1.0, 0.0);
-	glScalef(25.0, 25.0, 25.0);
+	//glScalef(25.0, 25.0, 25.0);
 	glCallList(this->p1->getDisplayList());
 	glPopMatrix();
 	/************************************************************************************/
 
 	//Bounding Boxes - By default are enabled
 	/************************************************************************************/
-	/*if (showBoundingBox) {
+	if (showBoundingBox) {
 		//draw the bounding box around the box
 		glPushMatrix();
 		glDisable(GL_LIGHTING);
 		glTranslatef(box_pos_x, box_pos_y, box_pos_z);
-		glCallList(box->getBoundingBox());
+		//glScalef(10.0, 10.0, 10.0);
+		glCallList(p1->getBoundingBox());
 		glEnable(GL_LIGHTING);
 		glPopMatrix();
 
 	}
 	/************************************************************************************/
 
+	/************************************************************************************/
+	//drawFlag
+	GLfloat mat_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
+	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	GLfloat mat_diffuse[] = { 0.55, 0.55, 0.55, 1.0 };
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	GLfloat mat_specular[] = { 0.7, 0.7, 0.7, 1.0 };
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialf(GL_FRONT, GL_SHININESS, 32);
+	draw_nurb();
+	/************************************************************************************/
 
 	// end - of all drawing
 	glMatrixMode(GL_PROJECTION);
@@ -345,19 +467,23 @@ void ToTheMoon::render() {
 	glLoadIdentity();
 	glColor3f(1.0, 1.0, 1.0);
 	renderBitmapString(0.0, this->height - 13.0f, 0.0f, "Use w, a, s, d, to move camera around.");
-	renderBitmapString(0.0, this->height - 26.0f, 0.0f, "Use i, k, to move forward and back.");
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
+
+
 	glDisable(GL_CULL_FACE);
+	
+
 	glutSwapBuffers();
 }
 
 //function to handle the game logic
 void ToTheMoon::logic() {
 
+	bool box_y_changed = false;
 	//handle input from the user
 	if (this->keyboard->getKeys()[P1_FORWARD]) {
 		this->camera_look_z += -10;
@@ -382,6 +508,19 @@ void ToTheMoon::logic() {
 		this->camera_pos_z += 10;
 		this->box_pos_z += 33.333333;
 	}
+
+	if (this->keyboard->getKeys()[P1_BOOST]) {
+		this->camera_look_y += 10;
+		this->camera_pos_y += 10;
+		this->box_pos_y += 33.333333;
+		box_y_changed = true;
+	}
+	if (box_y_changed) {
+		this->camera_look_y += -10;
+		this->camera_pos_y += -10;
+		this->box_pos_y += -33.333333;
+	}
+	
 }
 
 //Game loop to handle the logic and render
@@ -522,3 +661,26 @@ void ToTheMoon::drawParticles() {
 	}
 
 }
+
+/*
+void ToTheMoon::drawNurb() {
+	static GLfloat angle = 0.0;
+	int i, j;
+	// wave the flag by rotating Z coords though a sine wave
+	for (i = 1; i < 4; i++)
+		for (j = 0; j < 4; j++)
+			ctlpoints[i][j][2] = sin((GLfloat)i + angle);
+	angle += 0.1;
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glPushMatrix();
+	glTranslatef(0, 100.0, 0.0);
+	//glScalef(12.5, 12.0, 12.0);
+	glRotatef(90, 0., 0., 1.);
+	gluBeginSurface(nurbsflag);
+	gluNurbsSurface(nurbsflag, V_NUMKNOTS, sknots, U_NUMKNOTS, tknots,
+		3 * U_NUMPOINTS, 3,
+		&ctlpoints[0][0][0], 4, 4, GL_MAP2_VERTEX_3);
+	gluEndSurface(nurbsflag);
+	glPopMatrix();
+}
+*/

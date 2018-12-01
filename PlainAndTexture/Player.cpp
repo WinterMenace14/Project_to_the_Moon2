@@ -7,6 +7,8 @@ Player::Player() {
 	calculateNormalPerFace();
 	calculateNormalPerVertex();
 	meshToDisplayList();
+	calculateAABB(this->mesh->dot_vertex, this->boundingMaxPoint, this->boundingMinPoint);
+	aabbToDisplayList(boundingBox, this->boundingMaxPoint, this->boundingMinPoint);
 }
 
 //default destructor
@@ -20,6 +22,10 @@ Mesh* Player::getMesh() {
 
 GLuint Player::getDisplayList() {
 	return this->display;
+}
+
+GLuint Player::getBoundingBox() {
+	return this->boundingBox;
 }
 
 //normal per face
