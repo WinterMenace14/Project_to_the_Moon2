@@ -45,12 +45,16 @@ void draw_nurb() {
 			ctlpoints[i][j][2] = sin((GLfloat)i + angle);
 	angle += 0.1;
 	glPushMatrix();
+	glTranslatef(-300, 0, 200);
 	glScalef(1.5, 1.0, 1.0);
 	glRotatef(90, 0, 0, 1);
 	gluBeginSurface(nurbsflag);
 	gluNurbsSurface(nurbsflag, (V_size + ORDER), sknots, (U_size + ORDER), tknots,
 		3 * U_size, 3,
 		&ctlpoints[0][0][0], 4, 4, GL_MAP2_VERTEX_3);
+	gluNurbsSurface(nurbsflag, (V_size + ORDER), sknots, (U_size + ORDER), tknots,
+		3 * U_size, 3,
+		&ctlpoints[0][0][0], 4, 4, GL_MAP2_NORMAL);
 	gluEndSurface(nurbsflag);
 	glPopMatrix();
 }
@@ -174,6 +178,7 @@ void ToTheMoon::init() {
 	//setup graphics enviornment and objects within the world
 	//this->createMenus();
 	CreateTreeLists();
+	glEnable(GL_AUTO_NORMAL);
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 	this->ratio = (double)width / (double)height;
@@ -198,7 +203,7 @@ void ToTheMoon::init() {
 	GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 }; //0.6, 0.6, 0.6, 0.5
 	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 }; //0.3, 0.3, 0.3, 0.3
 	GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 }; //0.5, 0.5, 0.5, 0.3
-	GLfloat light_position[] = { 0.0, 400.0, 1.0, 0.0 }; //0.0, 0.0, 3500.0, 0.0
+	GLfloat light_position[] = { 0.0, 200.0, 1.0, 0.0 }; //0.0, 0.0, 3500.0, 0.0
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
@@ -290,7 +295,17 @@ void ToTheMoon::render() {
 
 	// tree fractal
 	glPushMatrix();
-	glTranslatef(300, -700, 300);
+	glTranslatef(500, -700, 500);
+	glScalef(100, 100, 100);
+	glCallList(FULLTREE);
+	glPopMatrix();
+	glPushMatrix();
+	glTranslatef(0, -700, 800);
+	glScalef(100, 100, 100);
+	glCallList(FULLTREE);
+	glPopMatrix();
+	glPushMatrix();
+	glTranslatef(-200, -700, 700);
 	glScalef(100, 100, 100);
 	glCallList(FULLTREE);
 	glPopMatrix();
@@ -419,7 +434,7 @@ void ToTheMoon::render() {
 	glPushMatrix();
 	glTranslatef(this->box_pos_x, this->box_pos_y, this->box_pos_z);
 	glRotatef(90, 0.0, 1.0, 0.0);
-	//glScalef(25.0, 25.0, 25.0);
+	glScalef(5.0, 5.0, 5.0);
 	glCallList(this->p1->getDisplayList());
 	glPopMatrix();
 	/************************************************************************************/
@@ -431,7 +446,7 @@ void ToTheMoon::render() {
 		glPushMatrix();
 		glDisable(GL_LIGHTING);
 		glTranslatef(box_pos_x, box_pos_y, box_pos_z);
-		//glScalef(10.0, 10.0, 10.0);
+		glScalef(5.0, 5.0, 5.0);
 		glCallList(p1->getBoundingBox());
 		glEnable(GL_LIGHTING);
 		glPopMatrix();
@@ -441,14 +456,19 @@ void ToTheMoon::render() {
 
 	/************************************************************************************/
 	//drawFlag
-	GLfloat mat_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
-	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-	GLfloat mat_diffuse[] = { 0.55, 0.55, 0.55, 1.0 };
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-	GLfloat mat_specular[] = { 0.7, 0.7, 0.7, 1.0 };
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-	glMaterialf(GL_FRONT, GL_SHININESS, 32);
+	glPushMatrix();
+	//material for flag
+	GLfloat mat_diffuse[] = { 1.0f, 0.5f, 0.31f, 1. };
+	GLfloat mat_specular[] = { 0.5f, 0.5f, 0.5f, 1. };
+	GLfloat mat_ambient[] = { 1.0f, 0.5f, 0.31f, 1. };
+
+	//creating materials
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0);
 	draw_nurb();
+	glPopMatrix();
 	/************************************************************************************/
 
 	// end - of all drawing
@@ -527,6 +547,7 @@ void ToTheMoon::logic() {
 void ToTheMoon::gameLoop() {
 	this->logic();
 	this->render();
+	//glutTimerFunc(1000.0 / 30.0, timer, 0);
 }
 
 //read in mouse input

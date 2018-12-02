@@ -41,6 +41,7 @@ public:
 	void mouse(int button, int state, int x, int y);	//mouse input method
 	void renderBitmapString(float x, float y, float Z, const char *string);	//method to print text
 	void drawParticles();	//draw particles
+	void timer(int t);
 	//void drawNurb(); //draw flag
 	Keyboard* getKeyboard();	//get the keyboard input
 
